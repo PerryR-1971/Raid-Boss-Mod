@@ -34,11 +34,11 @@ Currently the following enchantments are available
 + Positive Spirit (Chance to act twice)
 + AOE Attack (deals Damage around target area)
 
-
 Most echantment is available in two Levels, a lower and a harder one. Since the echantments are choosen randomly when the monster is spawn, it can lead to very powerful combinations, making the fights interesting. Needless to say that the monster scales with different parameters from the attacking heroes.
 There are a couple of anti-cheese mechanics implemented, so dont be to surprised if you cannot perma blind or slow the boss.
 The level of the Raid Boss is based on its HP.
 Each Raid Boss has an vulnerabilty to a certain magic school, these spell will deal double damage then.
+
 -----------------------------------------------------------------------------------------------------------------------
 
 How to change settings:
