@@ -1,4 +1,4 @@
-Raid Boss v1.0
+# Raid Boss v1.0
 
 Expecatation Management: this mod is not a recreation of the Raid Boss concept from Master of Puppet Mod. It will not feature big new unit models appearing on the map. However there is some inspiration from it. The goal of this mod is to create additional game content during your normal random map gameplay. Take it or leave it. However I do believe this mod has a lot of random elements which will offer you some surprises and create a couple of ineresting and fun fights. 
 
