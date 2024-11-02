@@ -1,0 +1,39 @@
+ZVSE2
+
+Function to set up battle stats of Raid Boss monsters once the fight starts
+!?FU(OnBeforeBattle)&i^wog_isNeutralBattle^/(ERM_FLAG_IS_HUMAN)/i^Raid_Boss_Mod_Active^=1;
+
+!!SN:W^Raid_Boss_Random_Hero^/0;
+!!SN:W^Raid_Boss_Karmic_Battle^/0;
+!!SN:W^Raid_Boss_Mod_Active^/?y2;
+!!UN:P72/?y1;                           [Check Random Hero Script temporarly]
+!!BA:P?y5/?y6/?y7;                      [Get the position of the battle]
+!!MW:Cy5/y6/y7/?y10;                    [check if the creature you are fighting is a wandering monster]
+
+!!if&y1=1/y2=1/y10>0;
+  !!SN:W^Surpress_Battle_Commander^/1;
+  !!SN:W^Raid_Boss_Random_Hero^/1;
+  !!UN:P72/0;                           [disable option for this combat]
+  !!VRi^wog_72_randHeroActive^:S(FALSE); 
+!!en;
+
+!!UN:P38/?y1;                           [Check Karmic Battle option]
+!!if&y1=1/y2=1/y10>0;  
+  !!SN:W^Surpress_Battle_Commander^/1;
+  !!SN:W^Raid_Boss_Karmic_Battle^/1;
+  !!UN:P38/0;                           [disable option for this combat]
+  !!VRi^wog_38_karmaType^:S0;           [disable random seed var]
+!!en;
+
+
+****************************************************************************
+*moved to main script to be executed earlier than 6 wog - random hero script
+*?FU(OnAfterBattleUniversal)&i^Raid_Boss_Mod_Active^=1;
+*!SN:W^Raid_Boss_Random_Hero^/?y1;
+*!SN:W^Raid_Boss_Mod_Active^/?y2;
+
+*!UN&y1=1/y2=1:P72/1;                   [activate random hero option again]
+*!VRi^wog_72_randHeroActive^&y1=1/y2=1:S(TRUE);
+
+*!SN:W^Raid_Boss_Karmic_Battle^/?y1;
+*!UN&y1=1/y2=1:P38/1;                   [activate karmic battle option again]

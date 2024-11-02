@@ -1,0 +1,1476 @@
+ZVSE2
+*Raid Boss Mod v1.0
+by Perry created 2024
+
+Check readme for mod description.
+
+
+!#SN:W^Raid_Boss_Mod_Active^/1;         [Set the mod active]
+****************************************************************************************************
+*Some settings can be changed here
+!?FU(OnGameEnter)&i^Raid_Boss_Mod_Active^=1;
+
+!!SN:W^Monster_Alive_Time^/12;          [The value how long monsters stay alive on the adventure map. Recommended: 10days]
+!!SN:W^Raid_Boss_Spawn_Chance^/14;      [The chance by which monsters spawn on the map. Recommended 10%]
+!!SN:W^Raid_Boss_Spawn_Radius^/20;      [The radius around towns that is possible to spawn a monster. Recommended 20 x and y radius depending on your map]
+!!SN:W^Raid_Boss_Max_Monsters^/10;      [Set the amount of wandering monsters that can be active at the same time, recommended around 10]
+!!SN:W^Raid_Boss_Spawn_Cooldown^/5;     [Set number in days in which a monster cannot spawn after one was spawned. Recommended 7 days]
+!!SN:W^Raid_Boss_special_chance_base^/1;[set chance for special events. Recommended 1%]
+!!SN:W^Raid_Boss_start_delay^/21;       [set the number in days which the monster does not spawn from the beginning of the game. Recommended 28 days]
+
+
+****************************************************************************************************
+*Set difficulty when entering the game
+!?FU(OnGameEnter)&i^timerIsAi^=0/i^timerDay^=1/i^Raid_Boss_Mod_Active^=1;
+!!FU(Raid_Boss_Settings_DL):P;
+
+When clicking on System Icon at Adventure Map run options again
+!?CM&1000&i^Raid_Boss_Mod_Active^=1;
+!!CM:F?v3 I?v4 S?v5;                    [where we click and click subtype]
+!!if&v3=512/v4=10;                      [if right click on System Icon  are clicked]
+!!FU(Raid_Boss_Settings_DL):P;
+!!en;
+
+
+!?FU(Raid_Boss_Settings_DL);
+!!SN:T^raid_monster.diff_header^/?z1;   [set text in header]
+!!SN:T^raid_monster.diff_level1^/?z2; 
+!!SN:T^raid_monster.diff_level2^/?z3; 
+!!SN:T^raid_monster.diff_level3^/?z4; 
+
+!!IF:G1/3/1/1/2/3/4/0/0/0/0/0/0/0/0/;   [Show Choice Dialouge]
+
+!!SN&v3=1:W^Raid_Boss_Difficulty^/1;    [Normal]
+!!SN&v3=2:W^Raid_Boss_Difficulty^/2;    [Hard]
+!!SN&v3=4:W^Raid_Boss_Difficulty^/3;    [Extreme]
+
+
+****************************************************************************************************
+*Check and save the number of towns on the map
+!?FU(OnGameEnter)&i^Raid_Boss_Mod_Active^=1;
+
+!!UN:U98/-1/?y1;                        [Get the Number of total Towns on the map in y1]
+!!VRy1:-1;                              [Substract 1 to match the town list]
+!!SN:W^Raid_Boss_Town_Numbers^/y1;      [save number in permanent variable]
+
+
+*On Every new day, theres a chance to spawn a raid boss near a humans players town.
+Chance to spawn increases by 1% per day.
+!?FU(OnEveryDay)&i^timerIsAi^=0/i^timerDay^>=1/i^Raid_Boss_Mod_Active^=1;
+
+*?FU(OnAdventureMapRightMouseClick);    [Test]
+!!SN:W^Raid_Boss_Town_Numbers^/?y1;     [Get the total number of towns on the map]
+!!SN:W^Raid_Boss_Spawn_Chance^/?y2;     [Get The chance by which monsters spawn on the map]
+!!SN:W^Raid_Boss_Max_Monsters^/?y3;     [Get the amount of max monsters on the map]
+!!SN:W^Raid_Boss_start_delay^/?y71;     [Get the number of days in which the monster cannot spwan]
+
+!!VRy51:S0;                             [init to zero]
+!!re i/1/y3;                            [loop monster check]
+  !!MWi:E?y50;                          [Check if a wandering monster with number 10 already exists. If yes exit, so that not more then 10 monsters are spawned at the same time]
+  !!VRy51:+y50;                         [sum up the amount of alive monsters]
+  !!FU&y51>=y3:E;                       [Exit if more than allowed amount]
+!!en;
+
+!!FU(Raid_Boss_Monster_Selection):P?y13/0; [returns random monster number from pool. Usually an ID from a defender commander. Other creatures can also be taken into the pool]
+
+!!OW:C?y20;                             [Get current player]
+!!VRy70:Sc;                             [Get Current day in y70]
+!!FU&y71>y70:E;                         [Exit fct is monster is not yet allowed to spawn]
+!!SN:W^Raid_Boss_Spawn_Player_%Y20^/?y90;[Get day of last spawn event for player color]
+!!VRy90&y90=0:+1;                       [add one week cooldown before a new spawn could happen]
+!!FU&y70<y90:E;                         [if time span is to short a new monster cannot spawn]
+!!VRy71:Sy70-y90;                       [calc the days that have passed since last spawn event. Later add these days to the chance a monster gets spawned.]
+!!VRy2:+y71;                            [slowly increase spawn chance]
+!!re i/0/y1;                            [create a loop with the number of towns]
+  !!VRy5:S1R99;                         [make random roll between 1 and 100]
+  !!if&y2>=y5;                          [if roll is successfull]
+    !!CA0/i:O?y4 P?y10/?y11/?y12;       [Get town owner and coordinates of town]
+    !!OW:Iy4/?y6;                       [Check if human owner/town]
+    !!if&y4=y20/y6=0;
+      !!FU(Raid_Boss_Spawn_fct):Py10/y11/y12/y13/y4; [Fct to spawn a monsters. Pass coordinates, monster ID, owner colour]
+      !!br;                             [Stop searching and exit loop]
+    !!en;
+  !!en;  
+!!en;
+
+
+*Check if a town is under siege by a monster. If yes steal resources and delete the monster afterwards
+!?FU(WOG_EndOfTurn)&i^Raid_Boss_Mod_Active^=1/1000; [On end of every day for every player]
+
+!!OW:C?y1 I-1/?y3;                      [Get current player and if AI]
+!!FU(Raid_Boss_Town_Siege)&y3=0:Py1;    [pass current player]
+
+
+!?FU(Raid_Boss_Monster_Selection);
+x1=returns monster from pool to spawn
+
+!!FU(WOG_GetRandomMonster):P?x1/4/6/(INT_MAX); [Get random WoG monster]
+!!VRy1:S0R10;                           [make random number]
+!!VRx1&y1>5:S183R8;                     [Choose random defender commander with 50% chance]
+
+
+*Loops all towns on the map and spawns a wandering monster that will attack the nearest town
+Spawned Wandering Monsters start with the number 1 counting upwarts. These number is used by the game and by my script to detect and identify the wandering monster
+!?FU(Raid_Boss_Spawn_fct);
+x1-x3 town coordinates, x4=monster ID, x5=player color
+
+!!VRy99:Sc;                             [Get Current Day in y99]
+!!UN:X?y30/?y31; !!VRy30:-1;            [Get Map size to prevent wrong placement of x-coordinate]
+
+!!SN:W^Raid_Boss_Spawn_Radius^/?y50; !!VRy40:F1/y30; [Get the radius around towns that is possible to spawn a monster. Recommended 20 x and y radius]
+!!VRy51:Sy50:2;                         [Get half the value from the search range]
+!!re t/0/500;                           [search a free place near the city to spawn monster]
+  !!VRy11:Sx1-y51;                      [Set to X]
+  !!VRy12:S1Ry50+y11;                   [generate x-coordinate with x plus/minus 10 in both directions]
+  !!VRy12&y12<0:S0; !!VRy12&y12>y30:Sy30;[coordinates cannot be bigger than map size]
+                     
+  !!VRy16:Sx2-y51;                      [Set to Y]
+  !!VRy17:S1Ry50+y16;                   [generate y-coordinate with y plus/minus 10 in both directions]
+  !!VRy17&y17<0:S0; !!VRy17&y17>y30:Sy30;[coordinates cannot be bigger than map size]
+
+  !!UN:Ey12/y17/x3;                     [check if the random coordinate is free to place a monster]
+  !!if&-1;                              [if it is free and the coordinates are within valid range]
+    !!MW:Py12/y17/x3/x4/?y10;           [spawn random monster at positon x/y/z and get WM unique number in variable]
+    !!SN:W^Raid_Boss_Monster_%Y10^/y99; [Set spawn day of wandering monster number]
+    !!SN:W^Raid_Boss_Spawn_Cooldown^/?y98; [Set number in days in which a monster cannot spawn after one was spawned]
+    !!VRy99:+y98;                       [add to current day]
+    !!SN:W^Raid_Boss_Spawn_Player_%X5^/y99; [Set day for which a monster spawned for a player]
+    !!MWy10:A2/x1/x2/x3;                [set destination point for the monster is the town of the human player]
+    !!MWy10:A3/1/1/1/0/1/0/0;           [set flags to trigger WM, and set flag to go to destination point, set flag to stand still when reaching destiantion, set flag to just go over land]
+    !!VRy41:S1R99;                      [Generate random number]
+    !!VRy40:S5;                         [y40 determines the amount of enchantments a raid boss holds. Usually 3 which means number 5]
+    !!VRy40&y41<=15:S6;                 [15% chance to spawn as Elite]
+    !!VRy40&y41<=5:S7;                  [5% chance to spawn as Champion]
+    !!FU(Raid_Boss_Enchantments):Py10/1/y40; [input WM number and set random enchantments]
+    !!SN&x5=0:T^raid_monster.red^/?z5; !!SN&x5=1:T^raid_monster.blue^/?z5; !!SN&x5=2:T^raid_monster.tan^/?z5; !!SN&x5=3:T^raid_monster.green^/?z5;
+    !!SN&x5=4:T^raid_monster.orange^/?z5; !!SN&x5=5:T^raid_monster.purple^/?z5; !!SN&x5=6:T^raid_monster.teal^/?z5; !!SN&x5=7:T^raid_monster.pink^/?z5;
+    !!SN:T^raid_monster.mon_appears^/?z20/^color^/z5; !!SN:Iz20/?z20;
+    !!IF:Q1/21/x4/1^%Z20^;              [show message with picture]
+    !!UN:Sy12/y17/x3/x5/0;              [reveal part of the map for certain player]
+    !!VRy12:-9; !!VRy17:-2;             [Offset camera to center Raid Boss Monster in the middle of the screen. Same for everyone?]
+    !!UN:Ly12/y17/x3/1200;              [Move view/camera to this position]
+    !!br;                               [Stop searching and exit loop]
+  !!en;
+!!en;
+
+
+*Check if a wandering monster is standing in front of your town and delete if if conditions are fullfilled
+!?FU(Raid_Boss_Town_Siege); 
+
+!!UN:U98/-1/?y2;                        [Get the Number of total Towns on the map in y2]
+!!re i/1/y2;                            [loop all towns on the map]
+  !!UN:U98/-1/i/2;                      [Get Coordinates of Town based on town number]
+  !!OBv2/v3/v4:U?y4;                    [Get Subtype]
+  !!CAv2/v3/v4:O?y6;                    [Get town owner]
+  *!IF:M^%V2 %V3 %V4 and y6 is %Y6 and town type is %Y4  and i is%I^;
+  !!OW:Iy6/?y7;                         [Check if human owner/town]
+  !!if&y7=0/y6=x1;                      [if its a town from human and the currents player end turn]
+    !!VRv2:-1;                          [Checks right in front of town]
+    !!VRv3:+1;                          [Checks right in front of town]
+    !!MW:Cv2/v3/v4/?y10; !!OBv2/v3/v4:T?y30; [Get Type ID]
+    !!UN&y10>0/y30=54:Ov2/v3/v4;        [delete if monster]
+    !!SN&y10>0/y30=54:W^Raid_Boss_Monster_%Y10^/0; [reset timer if monster was deleted]
+    !!FU(Raid_Boss_Enchantments)&y10>0/y30=54:Py10/0; [input WM number and delete previous set enchantments if monster was killed or deleted]
+
+    !!VRv2:+1;                          [Checks in front of town]
+    !!MW:Cv2/v3/v4/?y11; !!OBv2/v3/v4:T?y30; [Get Type ID]
+    !!UN&y11>0/y30=54:Ov2/v3/v4;        [delete if monster]
+    !!SN&y11>0/y30=54:W^Raid_Boss_Monster_%Y11^/0; [reset timer if monster was deleted]
+    !!FU(Raid_Boss_Enchantments)&y11>0/y30=54:Py11/0; [input WM number and delete previous set enchantments if monster was killed or deleted]
+
+    !!VRv2:+1;                          [Checks left in front of town]
+    !!MW:Cv2/v3/v4/?y12; !!OBv2/v3/v4:T?y30; [Get Type ID]
+    !!UN&y12>0/y30=54:Ov2/v3/v4;        [delete if monster]
+    !!SN&y12>0/y30=54:W^Raid_Boss_Monster_%Y12^/0; [reset timer if monster was deleted]
+    !!FU(Raid_Boss_Enchantments)&y12>0/y30=54:Py12/0; [input WM number and delete previous set enchantments if monster was killed or deleted]
+
+    !!if&y30=54;
+    !!if|y10>0/y11>0/y12>0;             [if there is any monster in front of the town show message to player]
+      !!SN&x1=0:T^raid_monster.red^/?z5; !!SN&x1=1:T^raid_monster.blue^/?z5; !!SN&x1=2:T^raid_monster.tan^/?z5; !!SN&x1=3:T^raid_monster.green^/?z5;
+      !!SN&x1=4:T^raid_monster.orange^/?z5; !!SN&x1=5:T^raid_monster.purple^/?z5; !!SN&x1=6:T^raid_monster.teal^/?z5; !!SN&x1=7:T^raid_monster.pink^/?z5;
+      !!SN:T^raid_monster.town_siege^/?z20; !!SN:Iz20/?z20;      
+
+      *!VRv2:-1; *!VRv3:-1;                   [get coordinates for the town again]
+      *!OBv2/v3/v4:T?y3;                      [Get Type ID]
+      *!FU(Raid_Boss_Town_destroy)&y3=98:Px1/v2/v3/v4; [pass player and town coordinates]
+
+*code to take players gold and resources
+      !!OW:Rx1/6/?y20;                  [get players gold]
+      !!VRy21:Si^timerWeek^;            [Put Current Week in y21]
+      !!VRy22:Si^timerMonth^;           [Put Current Week in y22]
+      !!VRy23&y22>8:*2;                 [Double costs after Month 8]
+      !!VRy23&y22>10:*2;                [Double costs again after Month 10]
+      !!OW:Rx1/0/?y50; !!VRy40:S0Ry22; !!if&y40<=y50; !!VRy40:*-1; !!OW:Rx1/0/dy40; !!en; !!if&y50<y40; !!OW:Rx1/0/0; !!en; [Get Wood]
+      !!OW:Rx1/1/?y50; !!VRy41:S0Ry22; !!if&y41<=y50; !!VRy41:*-1; !!OW:Rx1/1/dy41; !!en; !!if&y50<y41; !!OW:Rx1/1/0; !!en;
+      !!OW:Rx1/2/?y50; !!VRy42:S0Ry22; !!if&y42<=y50; !!VRy42:*-1; !!OW:Rx1/2/dy42; !!en; !!if&y50<y42; !!OW:Rx1/2/0; !!en;
+      !!OW:Rx1/3/?y50; !!VRy43:S0Ry22; !!if&y43<=y50; !!VRy43:*-1; !!OW:Rx1/3/dy43; !!en; !!if&y50<y43; !!OW:Rx1/3/0; !!en;
+      !!OW:Rx1/4/?y50; !!VRy44:S0Ry22; !!if&y44<=y50; !!VRy44:*-1; !!OW:Rx1/4/dy44; !!en; !!if&y50<y44; !!OW:Rx1/4/0; !!en;
+      !!OW:Rx1/5/?y50; !!VRy45:S0Ry22; !!if&y45<=y50; !!VRy45:*-1; !!OW:Rx1/5/dy45; !!en; !!if&y50<y45; !!OW:Rx1/5/0; !!en;
+
+      !!OW:Rx1/6/?y50;        
+      !!VRy46:Sy21*1000+2000;           [Each Week the monsters take 1000 more gold]
+      !!VRy46&y22>8:*2;                 [Double costs after Month 8]
+      !!VRy46&y22>10:*2;                [Double costs again after Month 10]
+      !!if&y46<=y50; !!VRy46:*-1; !!OW:Rx1/6/dy46; !!en; 
+      !!if&y50<y46; !!OW:Rx1/6/0; !!en;
+      !!SN:T^raid_monster.town_siege^/?z20; !!SN:Iz20/?z20;   
+      !!IF&1000/999:M^%Z20^;            [show message]
+    !!en;
+    !!en;
+  !!en;
+ !!en;   
+
+
+*function to destroy a random building but it can be buggy so it is disabled for now
+!?FU(Raid_Boss_Town_destroy);
+x1=player, x2-x4 town coords
+
+!!re i/0/999;                           [loop many times]
+  !!VRy1:S0R43;                         [Choose a random town building]
+  !!CAx2/x3/x4:B3/y1;                   [Check if this building exits ]
+  !!if&1;
+    !!CAx2/x3/x4:B2/y1;                 [if it is build demolish it]
+    !!br;                               [Stop searching and exit loop]
+  !!en; 
+!!en; 
+
+
+*Function to delete spawned monsters from the map after a certain time
+!?FU(OnEveryDay)&i^timerOnce^=1/i^timerDay^>=1/i^Raid_Boss_Mod_Active^=1; [On First Day of the Map]
+!!SN:W^Raid_Boss_Mod_Active^/?y1; !!FU&y1=0:E; [Option if Mod is not enabled]
+
+!!UN:U54/-1/?y1;                        [Number of monsters on the map: y1]
+!!VRv2:S-1;                             [Initialize v2 to -2 to work with new faster UN:U syntax]
+!!re i/1/y1;                            [loop throu all monstes on the map]
+  !!UN:U54/-1/-1/2;                     [Store coordinates for next monster in v2/v3/v4]
+  !!MW:Cv2/v3/v4/?y10;
+  !!if&y10>0;                           [if it is a wandering monster]
+    !!SN:W^Raid_Boss_Monster_%Y10^/?y11;[get spawn day of wandering monster number]
+    !!VRy99:Sc;                         [Get Current Day in y99]
+    !!SN:W^Monster_Alive_Time^/?y12;    [get alive time]
+    !!VRy11:+y12;                       [add up time stamps]
+    !!if&y11<y99;
+      !!UN:Ov2/v3/v4;                   [delete if monster is older than 10 days]
+      !!SN:W^Raid_Boss_Monster_%Y10^/0; [reset timer if monster was deleted]
+      !!FU(Raid_Boss_Enchantments):Py10/0; [input WM number and delete previous set enchantments if monster was killed or deleted]
+    !!en;  
+  !!en;
+!!en;
+
+
+*Show custom DL when right clicking a Wandering Monster on the Adventure map and it is a Raid Boss
+Shows Enchantments and Rewards
+!?FU(OnAdventureMapRightMouseClick)&i^Raid_Boss_Mod_Active^=1;
+
+!!CM:F?y6 S?y2;                         [get click events]
+!!FU|y6<>512/y2<>14:E;
+!!if&y6=512/y2=14:;                     [Right Mouse Click Push]
+  !!CM:P?y1/?y2/?y3;                    [Get courser position]
+  !!OBy1/y2/y3:T?y4 U?y5;               [get object type and subtype]
+  !!FU&y4<>54:E;                        [exit if no monster]
+  !!MW:Cy1/y2/y3/?y10;                  [check if wandering monster and get WM number]
+  !!FU(Raid_Boss_Enchantments):Py10/2;  [input WM number and set descriptions to z vars]
+  !!if&y10>0;
+    !!SN:W^Raid_Boss_Monster_%Y10^/?y11;[get spawn day of wandering monster number]
+    !!FU&y11=0:E;                       [Exit if the WM wasnt spawned by my script]
+    !!UN:N3/22/y5/0;                    [Get name of defeated Monster in z22]
+    !!CM:R0;                            [disable standard reaction]
+    !!DL285:N^Raid_Txt.txt^;            [parse dialogue]
+    !!VRz12:S^^; !!VRz11:S^^;           [empty string]
+    !!SN&z5<>z12:T^raid_monster.elite^/?z11; [get text for name Elite]
+    !!SN&z6<>z12:T^raid_monster.champion^/?z11; [get text for name Champion]
+    !!VRz7:S^^; !!VRz7&z5<>z12:S^-^;    [line filler in case Elite enchantment]
+    !!VRz8:S^^; !!VRz8&z6<>z12:S^-^;    [line filler in case Champion enchantment]
+    !!VRy70:Sy5%4;                      [Modulo of 4 to get vulnerability]
+    !!SN&y70=0:T^raid_monster.Air^/?z23; !!SN&y70=1:T^raid_monster.Water^/?z23; !!SN&y70=2:T^raid_monster.Earth^/?z23; !!SN&y70=3:T^raid_monster.Fire^/?z23;    
+    !!SN:T^raid_monster.raid_boss^/?z9; !!SN:Iz9/?z9;
+    !!SN:T^raid_monster.enchant_text^/?z10/^ench1^/z2/^ench2^/z3/^ench3^/z4/^ench4^/z5/^ench5^/z6/^name^/z22/^fill4^/z7/^fill5^/z8/^vuln^/z23; [get text file]
+    !!SN:T^raid_monster.reward_text^/?z20; !!SN:Iz20/?z20;
+
+    !!SN:W^Raid_Boss_Monster_%Y10^/?y11;[get spawn day of wandering monster number]
+    !!VRy99:Sc;                         [Get Current Day in y99]
+    !!SN:W^Monster_Alive_Time^/?y12;    [get alive time]
+    !!VRy11:+y12-y99;                   [add up time stamps]
+
+    !!SN:W^Raid_Boss_Difficulty^/?y20;  [Raid Boss difficulty determines the number the reward function is executed]
+    !!SN:W^Raid_Boss_Ench_Roll_%Y10_4^/?y90; !!VRy20&y90>0:+1; [Check if Raid Boss has Elite Enchantment and increase reward if it is]
+    !!SN:W^Raid_Boss_Ench_Roll_%Y10_5^/?y90; !!VRy20&y90>0:+1; [Check if Raid Boss has Champion Enchantment]
+    !!VRy20:+1;
+    !!SN:T^raid_monster.dialogue_hint^/?z21/^gold^/y11/^reward^/y20; !!SN:Iz21/?z21;        
+
+    !!VRy5:+2;                          [add +2 to monster to get correct def cadre]
+    !!DL285:A1/4/y5;                    [Set Def cadre]
+    !!DL285:A2/3/z9/1;                  [set top text name]
+    !!DL285:A3/3/z10/1;                 [set left text]
+    !!DL285:A4/3/z20/1;                 [set right text]
+    !!DL285:A5/3/z21/1;                 [set hint text Days alive and Rewards]
+    !!FU(DL_ShowPopup):P285;            [Show Popup DL]
+  !!en;
+!!en;
+
+
+*Important function to generate random echantments for spawned monsters. These enchantments are only valid
+for the time the monster is alive. When the monster is defeated the set of skills is deleted. The set is tied to the number of the wandering monster.
+!?FU(Raid_Boss_Enchantments);
+x1=Wandering Monster Number, x2=delete(0) set(1) get(2) enchantments, x3-x5=return enchantmens
+
+!!SN:W^Raid_Boss_Ench_Pack_%X1^/?y1;    [check if enchantment pack has already been set]
+
+*if x2=0 delete a certain enchantment pack
+!!if&y1=1/x2=0; 
+  !!re i/1/23;                          [loop next lines 3 times]
+    !!SN:W^Raid_Boss_Ench_%i_%X1^/0;    [delete all enchantments from this pack]
+  !!en;
+  !!SN:W^Raid_Boss_Ench_Pack_%X1^/0;    [set ench pack disabled]
+  !!SN:W^Raid_Boss_Ench_Roll_%X1_1^/0;  [delete enchantment roll 1]
+  !!SN:W^Raid_Boss_Ench_Roll_%X1_2^/0;  [delete enchantment roll 2]
+  !!SN:W^Raid_Boss_Ench_Roll_%X1_3^/0;  [delete enchantment roll 3]
+  !!SN:W^Raid_Boss_Ench_Roll_%X1_4^/0;  [delete enchantment roll 4]
+  !!SN:W^Raid_Boss_Ench_Roll_%X1_5^/0;  [delete enchantment roll 5]
+!!en;
+
+*if x2=1 fill a certain enchantment pack
+!!if&y1=0/x2=1;                         [if it hasnt choose 3 random echantments for that pack]
+  !!re i/3/x3;                          [loop next lines 3 times]
+    [:Raid1] loop starter
+    !!VRy2:S1R23;                       [make random number between 1 and 24. This must match the number of available enchantments]
+    !!SN:W^Raid_Boss_Ench_Roll_%X1_1^/?y20; [check for previous random variables]
+    !!SN:W^Raid_Boss_Ench_Roll_%X1_2^/?y21;
+    !!SN:W^Raid_Boss_Ench_Roll_%X1_3^/?y22;
+    !!SN:W^Raid_Boss_Ench_Roll_%X1_4^/?y23;
+    !!SN:W^Raid_Boss_Ench_Roll_%X1_5^/?y24;    
+    !!SN|y2=y20/y2=y21/y2=y22/y2=y23/y2=y24:G[Raid1]; [loop until a unique random number is found]
+    !!SN:W^Raid_Boss_Ench_%Y2_%X1^/1;   [enable random enchantment tied to pack]
+    !!VRxi:Sy2;                         [set x var to random number to return value for function]
+    *!IF:L^i is:%i and y2 is%Y2^;
+    !!SN&i=3:W^Raid_Boss_Ench_Roll_%X1_1^/y2; [set enchantment roll 1]
+    !!SN&i=4:W^Raid_Boss_Ench_Roll_%X1_2^/y2;
+    !!SN&i=5:W^Raid_Boss_Ench_Roll_%X1_3^/y2;
+    !!SN&i=6:W^Raid_Boss_Ench_Roll_%X1_4^/y2;
+    !!SN&i=7:W^Raid_Boss_Ench_Roll_%X1_5^/y2;
+  !!en;
+  !!SN:W^Raid_Boss_Ench_Pack_%X1^/1;    [set ench pack enabled]
+!!en;
+
+*if x2=2 check a certain enchantment pack
+!!if&x2=2; 
+  !!SN:W^Raid_Boss_Ench_Roll_%X1_1^/?x3;[check and return echantment roll]
+  !!FU(Raid_Boss_Set_Enchantment_Name):Px3/2; [set name of first enchantment to z var with index 2]
+  !!SN:W^Raid_Boss_Ench_Roll_%X1_2^/?x4;
+  !!FU(Raid_Boss_Set_Enchantment_Name):Px4/3; [set name of second enchantment to z var with index 3]
+  !!SN:W^Raid_Boss_Ench_Roll_%X1_3^/?x5;
+  !!FU(Raid_Boss_Set_Enchantment_Name):Px5/4; [set name of third enchantment to z var with index 4]
+  !!SN:W^Raid_Boss_Ench_Roll_%X1_4^/?x6;
+  !!FU(Raid_Boss_Set_Enchantment_Name):Px6/5; [set name of third enchantment to z var with index 5]
+  !!SN:W^Raid_Boss_Ench_Roll_%X1_5^/?x7;
+  !!FU(Raid_Boss_Set_Enchantment_Name):Px7/6; [set name of third enchantment to z var with index 6]
+!!en;
+
+
+*Sets the names of the echantments to desired z-vars
+!?FU(Raid_Boss_Set_Enchantment_Name);
+x1=Enchtmant Number, x2=Index of Z-Var
+
+!!VRzx2&x1=0:S^^;                 
+!!SN&x1=1:T^raid_monster.Enchantment_1^/?zx2; [More HP and Damage +25%]
+!!SN&x1=2:T^raid_monster.Enchantment_2^/?zx2; [More HP and Damage +50%]
+!!SN&x1=3:T^raid_monster.Enchantment_3^/?zx2; [+3 Speed]
+!!SN&x1=4:T^raid_monster.Enchantment_4^/?zx2; [+4 Speed]
+!!SN&x1=5:T^raid_monster.Enchantment_5^/?zx2; [+4 Units]
+!!SN&x1=6:T^raid_monster.Enchantment_6^/?zx2; [+8 Units]
+!!SN&x1=7:T^raid_monster.Enchantment_7^/?zx2; [+30% physical immunity]
+!!SN&x1=8:T^raid_monster.Enchantment_8^/?zx2; [+60% physical immunity]
+!!SN&x1=9:T^raid_monster.Enchantment_9^/?zx2; [+3 buffs applied]
+!!SN&x1=10:T^raid_monster.Enchantment_10^/?zx2; [+4 buffs applied]
+!!SN&x1=11:T^raid_monster.Enchantment_11^/?zx2; [Fire Shield]
+!!SN&x1=12:T^raid_monster.Enchantment_12^/?zx2; [Has high Luck and Morale and higher chance for random events]
+!!SN&x1=13:T^raid_monster.Enchantment_13^/?zx2; [+2 Cast before attack]
+!!SN&x1=14:T^raid_monster.Enchantment_14^/?zx2; [+3 casts before attack]
+!!SN&x1=15:T^raid_monster.Enchantment_15^/?zx2; [+2 attacks]
+!!SN&x1=16:T^raid_monster.Enchantment_16^/?zx2; [+3 attacks]
+!!SN&x1=17:T^raid_monster.Enchantment_17^/?zx2; [+25% chance to dodge attacks]
+!!SN&x1=18:T^raid_monster.Enchantment_18^/?zx2; [+50% chance to dodge attacks]
+!!SN&x1=19:T^raid_monster.Enchantment_19^/?zx2; [adds bonus damage with attacks]
+!!SN&x1=20:T^raid_monster.Enchantment_20^/?zx2; [adds more bonus damage with attacks]
+!!SN&x1=21:T^raid_monster.Enchantment_21^/?zx2; [regenerates ca 20% of max HP]
+!!SN&x1=22:T^raid_monster.Enchantment_22^/?zx2; [Summons a pack of elementals every turn]
+!!SN&x1=23:T^raid_monster.Enchantment_23^/?zx2; [50% chance to act twice]
+!!SN&x1=24:T^raid_monster.Enchantment_24^/?zx2; [50% of damage is dealt around the target creature area]
+
+
+****************************************************************************************************
+
+
+
+                              Battlefield and Combat Scripting
+
+
+
+****************************************************************************************************
+1) deactive random hero option and clear battlefield from other monsters
+
+2) Set the power of the Raid Boss monster
+
+3) apply general combat improvements
+- all raid boss have 25% magic immunity dwarv type and all debuffs only last until rund end
+
+4) coding section of specific enchantments 
+
+5) reward section after combat
+
+!?FU(OnBeforeBattle)&i^Raid_Boss_Mod_Active^=1;
+!!MW:Cv998/v999/v1000/?y10;             [check if wandering monster and get WM number]
+!!VRi^Is_Raid_Boss_Fight^&i^wog_isNeutralBattle^/(ERM_FLAG_IS_HUMAN)/y10>0:S(TRUE);
+
+
+!?FU(OnAfterTacticsPhase)&i^Is_Raid_Boss_Fight^;
+!!BA:P?y1/?y2/?y3;                      [Get the position of the battle]
+!!MW:Cy1/y2/y3/?y10;                    [check if the creature you are fighting is a wandering monster]
+!!FU(Raid_Boss_Power_Setup)&y10>0:Py10; [pass wandering monster number]
+
+
+!?FU(Raid_Boss_Power_Setup);
+
+!!HE-10:E?y4/?y5/1 F?y22/?y23/?y74/?y75;[Get Level of attacking Hero Attack and Defense]
+
+!!VRy20:S0;                             [get to total amount of HP of the attacker army]
+!!re i/0/20;                            [loop attacker stacks]
+  !!BMi:N?y1;
+  !!BMi:H?y2;
+  !!VRy21:Sy1*y2;
+  !!VRy20:+y21;                         [sum up total HP points of army]
+!!en;
+
+!!DO(Raid_Boss_Set_Stats)/21/41/1:Py20/y5/y22/y23/x1; [Pass army value, level, attack and defense of hero, wandering monsters number]
+
+
+*Set stats of raid boss monster stack
+!?FU(Raid_Boss_Set_Stats);
+
+!!BMx16:N?y1 T?y2 P?y3;                 [get stack number, type and position]
+!!FU|y2=145/y2=146/y2=147/y2=148/y2=149/y1=0:E; [Execlude Warmachines and no stacks]
+
+!!BM21&x16=21:P98;                      [Set to a new position were usually the commander is]
+
+!!VRy5:Sc;                              [Set to days]
+!!VRy6:Sc+6:7;                          [Set weeks]
+!!VRy7:Sx2*200;                         [Hero level mal 200]
+!!VRy8:Sc+6:7*100;                      [Week mal 100]
+!!VRy9:Sx2*4;                           [Hero level mal 4 for Damage]
+
+**Calculate the Strength of Raid Boss**
+!!VRy10:Sx3*2+y6;                       [Attack=Attack from Hero *2 + Gameweeks]
+!!VRy11:Sx4*2+y6;                       [Defense=Defense from Hero *2 + Gameweeks]
+!!VRy12:Sx2:10 +2R2;                    [Speed=Herolvl/10 +2-4]
+!!SN:W^Typhon_Third_Upgrade_Mod_Active^/?y99; [With TUM battle commander is slightly stronger]
+!!VRy13&y99=0:Sx1:6 +y7 +y8 +50 :2;     [Health=Fight Value/5 +Herlolvl*200 +Week*100 durch 2]
+!!VRy13&y99=1:Sx1:5 +y7 +y8 +50 :2;     [Health=Fight Value/4 +Herlolvl*200 +Week*100 durch 2]
+!!VRy14:Sx1:250 +y9 +5R20;              [Min Damage HP_Value +Hero Level*10]
+!!VRy15:Sx1:150 +y9 +31R45;             [Max Damage]
+!!VRy13|y13<=0/y13>5000000:S5000000;    [prevent overflow - Note that the upper limit for commander HP is far less than INT_MAX! It overflows when bigger than 30000000]
+!!VRy12&y13>=500000:+1; !!VRy12&y13>=1000000:+1; !!VRy12&y13>=5000000:+1; [Add additional speed for very high monster HP]
+
+!!SN:W^Raid_Boss_Ench_1_%X5^/?y1;       [Strong]
+!!SN:W^Raid_Boss_Ench_2_%X5^/?y2;       [Powerfull]
+
+*!VRy1:S1; Test
+*!VRy2:S1; Test
+
+*Strong
+!!if|y1=1/y2=1;                         [if at least one echantment is active]
+  !!if&y1=1/y2=0;
+    !!VRy10:*5:4; !!VRy11:*5:4; !!VRy13:*5:4; !!VRy14:*5:4; !!VRy15:*5:4; [+25% stats]
+  !!en;
+  !!if&y2=1/y1=0;
+    !!VRy10:*3:2; !!VRy11:*3:2; !!VRy13:*3:2; !!VRy14:*3:2; !!VRy15:*3:2; [+50% stats]
+  !!en;
+  !!if&y2=1/y1=1;
+    !!VRy10:*7:4; !!VRy11:*7:4; !!VRy13:*7:4; !!VRy14:*7:4; !!VRy15:*7:4; [+75% stats]
+  !!en;
+!!en;
+
+!!SN:W^Raid_Boss_Ench_3_%X5^/?y1;       [Quick]
+!!SN:W^Raid_Boss_Ench_4_%X5^/?y2;       [Fast]
+
+*!VRy1:S1; Test
+*!VRy2:S1; Test
+
+*Fast
+!!if|y1=1/y2=1;                         [if at least one echantment is active]
+  !!if&y1=1/y2=0;
+    !!VRy12:+3;                         [+3 Speed]
+  !!en;
+  !!if&y2=1/y1=0;
+    !!VRy12:+4;                         [+4 Speed]
+  !!en;
+  !!if&y2=1/y1=1;
+    !!VRy12:+7;
+  !!en;
+!!en;
+
+!!SN:W^Raid_Boss_Ench_5_%X5^/?y1;       [Pack]
+!!SN:W^Raid_Boss_Ench_6_%X5^/?y2;       [Horde]
+
+*!VRy1:S1;                              [Test]
+*!VRy2:S1;                              [Test]
+*Pack and Horde
+!!if|y1=1/y2=1;                         [if at least one echantment is active]
+  !!VRy5:S0;
+  !!VRy5&y1=1:S4;                       [Set the amount of creatures that are summoned]
+  !!VRy5&y2=1:S8;
+  !!VRy5&y1=1/y2=1:S12;                 [10 summons in total]
+  !!BM21:T?y3;                          [Get creature type]
+  !!MA:Oy3/?y4;
+
+  !!re i/0/y5;
+    !!if&x16=21;
+
+      !!VRy60&y4=0:S0R13;               [Castle]
+      !!VRy60&y4=1:S14R13;              [Rampart]
+      !!VRy60&y4=2:S28R13;              [Tower]
+      !!VRy60&y4=3:S42R13;              [Inferno]
+      !!VRy60&y4=4:S56R13;              [Necropolis]
+      !!VRy60&y4=5:S70R13;              [Dungeon]
+      !!VRy60&y4=6:S84R13;              [Stronghold]
+      !!VRy60&y4=7:S98R13;              [Fortress]
+
+      [:Raid2] loop to get correct conflux creature
+      !!VRy60&y4=8:S112R13;             [Conflux]
+      !!SN|y60=116/y60=117/y60=122/y60=124/y60=126/y60=128:G[Raid2]; [loop until a unique random number is found]
+      !!FU(WOG_GetRandomMonster)&y4=-1:P?y60/0/6/(INT_MAX); [Get random WoG monster if we are fighting vs a creature of neutral alignment]
+
+      !!if&y5=4;                        [Summon Spots for Pack]
+        !!VRy6&i=0:S64; !!VRy6&i=1:S96; !!VRy6&i=2:S132; !!VRy6&i=3:S83; !!VRy6&i=4:S117; [center]
+      !!en;                             
+
+      !!if&y5=8;                        [Summon Spots for Horde]
+        !!VRy6&i=0:S11; !!VRy6&i=1:S27; !!VRy6&i=2:S45; !!VRy6&i=3:S30; [top site]
+        !!VRy6&i=4:S181; !!VRy6&i=5:S163; !!VRy6&i=6:S147; !!VRy6&i=7:S166; [bottom site]
+      !!en;                             
+
+      !!if&y5=12;                       [Summon Spots for Pack and Horde together]
+        !!VRy6&i=0:S64; !!VRy6&i=1:S96; !!VRy6&i=2:S132; !!VRy6&i=3:S83; !!VRy6&i=4:S117; [center]
+        !!VRy6&i=5:S11; !!VRy6&i=6:S27; !!VRy6&i=7:S45; !!VRy6&i=8:S30; [top site]
+        !!VRy6&i=9:S181; !!VRy6&i=10:S163; !!VRy6&i=11:S147; !!VRy6&i=12:S166; [bottom site]
+      !!en;
+
+      !!BU:Sy60/1/y6/1/0/0;             [Summon First creature number and type at position]
+    !!en;
+  !!en;
+!!en;
+
+
+*Fire Shield
+!!SN:W^Raid_Boss_Ench_11_%X5^/?y1;      [Fire Shield]
+!!BMx16&y1=1:M29/99/3;                  [Add Fire Shield]
+
+
+!!SN:W^Raid_Boss_Ench_12_%X5^/?y1;      [Lucky]
+
+*!VRy1:S1; Test
+*Positive Spirit/Lucky
+!!if&y1=1;
+  !!SS49:E3/?y3; !!SS49:E3/6;           [temporaily set Luck and Morale to +6]
+  !!SS51:E3/?y4; !!SS51:E3/6;  
+  !!BMx16:M49/99/3;                     [Add Mirth]
+  !!BMx16:M51/99/3;                     [Add Fortune]
+  !!SS49:E3/y3;                         [restore old Luck and Morale value]
+  !!SS51:E3/y4;
+!!en;
+
+!!VRy19:S0;                             [Set number of shots to 0]
+
+!!if&x16>21;                            [Any creature above unit 21 has reduced stats. Usually that is needed in case of Pack/Horde enchantment]
+  !!VRy13::3;                
+  !!VRy10::3; !!VRy11::3; 
+  !!VRy14::3; !!VRy15::3;
+  !!VRy12::3;
+  !!VRy19:S1;                           [Set number of shots to 1 for Pack and Horde]
+!!en;
+
+!!VRy13&y13<1000:S1000;                 [Min HP is 1000]
+!!VRy10&y10<20:S20; !!VRy11&y11<20:S20; [Attack and Defense min 20]
+!!VRy14&y14<50:S50; !!VRy15&y15<125:S125;[Min and Max damage is 50-125]
+!!VRy12&y12<4:S4;                       [Min 4 speed]
+
+*!VRy12:S23; Test
+
+!!SN:W^Raid_Boss_Difficulty^/?y1;
+!!if&y1=2;                              [Hard]
+  !!VRy13:*3:2;                         [Health]
+  !!VRy10:*3:2; !!VRy11:*3:2;           [Att Def]
+  !!VRy14:*3:2; !!VRy15:*3:2;           [Min Max Dmg]
+!!en;
+!!if&y1=3;                              [Extreme]
+  !!VRy13:*2;                           [Health]
+  !!VRy10:*2; !!VRy11:*2;               [Att Def]
+  !!VRy14:*2; !!VRy15:*2;               [Min Max Dmg]
+!!en;
+
+!!SN:W^Raid_Boss_Ench_Roll_%X5_4^/?y1;  [Check if Raid Boss has Elite Enchantment]
+!!if&y1>0;                              [If Elite +25% Stats]
+  !!VRy13:*5:4;                         [Health]
+  !!VRy10:*5:4; !!VRy11:*5:4;           [Att Def]
+  !!VRy14:*5:4; !!VRy15:*5:4;           [Min Max Dmg]
+!!en;
+
+!!SN:W^Raid_Boss_Ench_Roll_%X5_5^/?y1;  [Check if Raid Boss has Champion Enchantment]
+!!if&y1>0;                              [If Champion +25% Stats]
+  !!VRy13:*5:4;                         [Health]
+  !!VRy10:*5:4; !!VRy11:*5:4;           [Att Def]
+  !!VRy14:*5:4; !!VRy15:*5:4;           [Min Max Dmg]
+!!en;
+
+!!BMx16:Hy13 Ay10 Dy11 Sy12 U1/y14 U2/y15 U3/y19 E0; [Give Stats and Set casts and shots to zero]
+
+
+!!SN:W^Raid_Boss_Ench_9_%X5^/?y1;       [Buffed +3 Buffs]
+
+*!VRy1:S1; Test
+*Buffed
+!!if&y1=1;
+  !!VRy40:S30R3;                        [Add 1 Advanced Elemental Protection]
+  !!BMx16:My40/5/3;                     [Add Elemental Protection]
+  !!SS27:E3/?y3; !!SS27:E3/60;          [temporaily set Luck and Morale to +6]
+  !!SS28:E3/?y4; !!SS28:E3/50;    
+  !!BMx16:M27/99/3;                     [Add Air Shield]
+  !!BMx16:M28/99/3;                     [Add Shield]
+  !!SS27:E3/y3;                         [restore old Shield value]
+  !!SS28:E3/y4;
+!!en;
+
+!!SN:W^Raid_Boss_Ench_10_%X5^/?y1;      [Enchanted +4 Buffs]
+*!VRy1:S1; Test
+
+!!if&y1=1;
+  !!VRy40:S30R3;                        [Add 1 Advanced Elemental Protection]
+  !!BMx16:My40/99/3;                    [Add Elemental Protection]
+  !!BMx16:M41/99/3;                     [Add Bless]
+  !!SS46:E3/?y3; !!SS46:E3/10;          [temporaily set Stone Skin to +10]
+  !!BMx16:M46/99/3;                     [Add Stone Skin]
+  !!SS46:E3/y3;                         [restore old Stone Skin value]
+  !!BMx16:M48/99/3;                     [Add Prayer]
+!!en;
+
+
+*Raid Boss Elite and Champions or Lucky have a higher chance to trigger special events, making them much more random and harder to defeat
+!?FU(OnBeforeBattle)&i^Is_Raid_Boss_Fight^;
+
+!!SN:W^Raid_Boss_special_chance_base^/?y4; [Get chance for special events]
+!!SN:W^Raid_Boss_special_chance^/y4;    [Reset chance for special events to base value]
+
+!!MW:Cv998/v999/v1000/?y10;             [check if wandering monster and get WM number]
+!!SN:W^Raid_Boss_Ench_Roll_%Y10_4^/?y1; [Check if Raid Boss has Elite Enchantment ]
+!!SN:W^Raid_Boss_Ench_Roll_%Y10_5^/?y2; [Check if Raid Boss has Champion Enchantment]
+!!SN&y1>0:W^Raid_Boss_special_chance^/d3;[Add chance for special events by 3%]
+!!SN&y2>0:W^Raid_Boss_special_chance^/d6;[Add chance for special events by 6%]
+!!SN:W^Raid_Boss_Ench_12_%Y10^/?y3;     [Check Lucky enchantment]
+!!SN&y3>0:W^Raid_Boss_special_chance^/d6;[Add chance for special events by +6% if Lucky enchantment]
+
+
+*damage reduction and spectral hit enchantment
+!?FU(OnStackToStackDamage)&i^Is_Raid_Boss_Fight^;
+!!FU&x9=1:E;                            [Exit calculation for theoretical attack]
+!!MW:Cv998/v999/v1000/?y10;             [check if wandering monster and get WM number]
+!!SN:W^Raid_Boss_Ench_7_%Y10^/?y1;      [resistant]
+!!SN:W^Raid_Boss_Ench_8_%Y10^/?y2;      [resistant]
+!!SN:W^Raid_Boss_special_chance^/?y3;   [get chance for special events to trigger]
+!!VRy4:S0R100; !!VRy1&y4<=y3:S1;        [Small chance to activate trigger]
+
+*!VRy1:S1;                              [Test]
+*!VRy2:S1;                              [Test]
+
+!!if|y1=1/y2=1;                         [if at least one echantment is active]
+  !!if&x1>=0/x1<=20;                    [if any valid battlestack]
+    !!if&x2>=21/x2<=41;                 [if any valid battlestack]
+      !!VRx4&y1=1/y2=0:*70:100;         [30% damage reduction]
+      !!VRx4&y1=0/y2=1:*40:100;         [60% damage reduction]
+      !!VRx4&y1=1/y2=1:*10:100;         [90% damage reduction]
+    !!en;
+  !!en;
+!!en; 
+
+
+!!SN:W^Raid_Boss_Ench_19_%Y10^/?y1;     [spectral hit I]
+!!SN:W^Raid_Boss_Ench_20_%Y10^/?y2;     [spectral hit II]
+
+*!VRy1:S1;                              [Test]
+*!VRy2:S1;                              [Test]
+
+!!VRy22:Si^timerMonth^+1;               [Put Current Week in y22]
+!!VRy23&y1=1/y2=0:Sy22*100;             [Add 100 extra damage per game month with attacks]
+!!VRy23&y1=0/y1=1:Sy22*200;             [Add 200 extra damage per game month with attacks]
+!!VRy23&y1=1/y2=1:Sy22*300;             [Add 300 extra damage per game month with attacks]
+
+!!if|y1=1/y2=1;                         [if at least one echantment is active]
+  !!if&x1>=21/x1<=41;                   [if any valid battlestack]
+    !!if&x2>=0/x2<=20;                  [if any valid battlestack]
+      !!VRx4&y1=1/y2=0:+y23;            [+100 damage per month with attacks]
+      !!VRx4&y1=0/y1=1:+y23;            [+200 damage per month with attacks]
+      !!VRx4&y1=1/y2=1:+y23;            [+300 damage per month with attacks]
+    !!en;
+  !!en;
+!!en; 
+
+
+*Casting before attack
+!?FU(OnBeforeBattleAction)&i^Is_Raid_Boss_Fight^;
+!!MW:Cv998/v999/v1000/?y10;             [check if wandering monster and get WM number]
+!!SN:W^Raid_Boss_Ench_13_%Y10^/?y1;     [check caster enchantment variable]
+!!SN:W^Raid_Boss_Ench_14_%Y10^/?y2;
+!!SN:W^Raid_Boss_special_chance^/?y3;   [get chance for special events to trigger]
+!!VRy4:S0R100; !!VRy1&y4<=y3:S1;        [Small chance to activate trigger]
+
+*!VRy1:S1;                              [Test]
+*!VRy2:S1;                              [Test]
+
+!!FU&y1=0/y2=0:E;                       [Exit if no caster enchantment is set active]
+
+!!VRy5:S0;
+!!VRy5&y1=1:S1;                         [Set the amount of casts before attack]
+!!VRy5&y2=1:S2;
+!!VRy5&y1=1/y2=1:S4;                    [5 casts in total]
+
+!!BG:A?y1 E?y2 N?y3 D?y4;               [Aktion in y1]
+!!if&y1=6/y2>=0/y2<=41/y3>=21;          [if all conditions are true]
+  !!re i/0/y5;
+    !!VRy9:S1R8;                        [choose random spell]
+    !!VRy10&y9=1:S15;                   [spell magic arrow]
+    !!VRy10&y9=2:S16;
+    !!VRy10&y9=3:S17;
+    !!VRy10&y9=4:S18;
+    !!VRy10&y9=5:S19;
+    !!VRy10&y9=6:S20;
+    !!VRy10&y9=7:S21;
+    !!VRy10&y9=8:S22;
+    !!VRy10&y9=9:S23;
+    !!BMy3:Cy10/y4/3/3/1;               [apply cast to target from currently acting stack]
+  !!en;
+!!en;
+
+ 
+*function to give extra attacks/shots to creatures from different sources
+!?FU(OnBeforeBattleAction)&i^Is_Raid_Boss_Fight^;
+!!MW:Cv998/v999/v1000/?y10;             [check if wandering monster and get WM number]
+!!SN:W^Raid_Boss_Ench_15_%Y10^/?y1;     [check caster enchantment variable]
+!!SN:W^Raid_Boss_Ench_16_%Y10^/?y2;
+!!SN:W^Raid_Boss_special_chance^/?y3;   [get chance for special events to trigger]
+!!VRy4:S0R80; !!VRy1&y4<=y3:S1;         [Small chance to activate trigger]
+
+*!VRy1:S1;                              [Test]
+*!VRy2:S1;                              [Test]
+
+!!FU&y1=0/y2=0:E;                       [Exit if no caster enchantment is set active]
+!!SN:W^Raid_Boss_Strikes^/0;            [reset flag or reset it at BG1]
+!!VRy6:S0;                              [set to zero]
+!!VRy6&y1=1:S2;                         [Set the amount of attacks before attack +2]
+!!VRy6&y2=1:S3;                         [Set the amount of attacks before attack +3]
+!!VRy6&y1=1/y2=1:S5;                    [5 attacks in total]
+!!VRy6&y1=1/y2=1:S5;                    [5 attacks in total]
+
+!!BG:A?y4 N?y5;                         [get action and current stack]
+!!if&y4=6/y5>=21/y5<=41/y6>0;           [If attacking between 21 and 41]
+  !!SN:W^Raid_Boss_Strikes^/dy6;
+!!en;
+
+
+!?BG1&i^Is_Raid_Boss_Fight^;            [Trigger to handle extra shoots and additional strikes]
+!!SN:W^Raid_Boss_Strikes^/0;            [reset flag or reset it at BG1]
+
+
+!?FU(OnStartOrLoad)&i^Raid_Boss_Mod_Active^=1;
+!!SN:L^EraPlugins\erm_hooker.era^/?y1;
+!!FU&y1=0:E;
+!!SN:Ay1/^SetHook^/?y2;
+!!SN:Ey2/1/7381311/(Raid_Boss_Extra_Strike); [hook at <after metee_attack>]
+
+!?FU(Raid_Boss_Extra_Strike);           [extra_metee_attack]
+!!SN:X?y1/1;                            [edi]
+!!SN:W^Raid_Boss_Strikes^/?y30;
+!!SN:W^Raid_Boss_Strikes^/0;
+!!FU&y30<1:E;
+!!UN:Cy1/4/?y10;                        [y10=A_STACK]
+!!VRy2:Sy1+8;
+!!UN:Cy2/4/?y3;                         [y3=ebp]
+!!VRy4:Sy3+8;                           [ebp+8]
+!!UN:Cy4/4/?y5;                         [y5=[ebp+08]
+!!VRy6:Sy1+4;
+!!UN:Cy6/4/?y20;                        [y20=D_STACK]10#]
+!!VRy11:Sy10+52;                        [11#]
+!!VRy12:Sy10+76;
+!!VRy13:Sy10+656;
+!!VRy14:Sy10+688;
+!!VRy15:Sy10+704;
+!!VRy21:Sy20+52;
+!!VRy22:Sy20+76;
+!!UN:Cy11/4/?y31;                       [18#]
+!!UN:Cy12/4/?y32;
+!!UN:Cy13/4/?y33;
+!!UN:Cy14/4/?y34;
+!!UN:Cy15/4/?y35;
+!!UN:Cy21/4/?y41;
+!!UN:Cy22/4/?y42;
+!!FU|y31<0/y32<1/y41<0/y42<1/y33>0/y34>0/y35>0:E;
+!!SN:E4461360/2/y10/y20/y5;
+!!VRy30:-1;
+!!SN&y30>0:G18;
+
+
+*Chance to Evade/Dodge melee or ranged attacks*
+!?MF1&i^Is_Raid_Boss_Fight^;
+
+!!MW:Cv998/v999/v1000/?y10;             [check if wandering monster and get WM number]
+!!SN:W^Raid_Boss_Ench_17_%Y10^/?y1;     [check caster enchantment variable]
+!!SN:W^Raid_Boss_Ench_18_%Y10^/?y2;
+!!SN:W^Raid_Boss_special_chance^/?y3;   [get chance for special events to trigger]
+!!VRy4:S0R100; !!VRy1&y4<=y3:S1;        [Small chance to activate trigger]
+
+*!VRy1:S1;                              [Test]
+*!VRy2:S1;                              [Test]
+
+!!FU&y1=0/y2=0:E;                       [Exit if no caster enchantment is set active]
+!!UN:C42149568/4/?y10;                  [Physical Damage]
+!!if|y10=4462398/y10=4455011/y10=4456676;[Only run when melee or shooting damage]
+  !!BG:A?y3;
+    !!if|y3=6/y3=7;                     [If Melee or Range]
+    !!MF:N?y4;                          [damage receiving stack]
+    !!BMy4:I?y5 S?y6;                   [Monster Side Index type and speed]
+    !!if&y4>=21/y3<=41/y5=1;            [if any defender stack and defender side]
+      !!VRy20:S0R99;                    [Generate Random number]
+      !!VRy22:S0;                       [set to zero]
+      !!VRy22&y1=1:S25;                 [Set the chance to dodge to +25%]
+      !!VRy22&y2=1:S50;                 [Set the chance to dodge to +50%]
+      !!VRy22&y1=1/y2=1:S75;            [Set the chance to dodge to +75%]
+      !!if&y20<=y22;                    [chance is ]
+        !!VRz-1:S^AIRSHELD^;
+        !!SN&i^battle_isVisible^:Pz-1;
+        !!MF:E0;                        [set damage to zero]
+        !!MF:F0;                        [set final damage to zero]
+        !!SN:T^AC_Misc.Air Dodge^/?z-1;
+        !!BU&i^battle_isVisible^:Mz-1;  [show message in log]
+      !!en;
+    !!en;
+  !!en;
+!!en;
+
+
+*The damage a raid boss can receive is never more than 33% of his max HP with one strike for physical damage
+!?MF1&i^Is_Raid_Boss_Fight^;
+
+!!MW:Cv998/v999/v1000/?y10;             [check if wandering monster and get WM number]
+!!FU&y10=0:E;                           [Exit if no caster enchantment is set active]
+!!UN:C42149568/4/?y10;                  [Physical Damage]
+!!if|y10=4462398/y10=4455011/y10=4456676;[Only run when melee or shooting damage]
+  !!BG:A?y3;
+    !!if|y3=6/y3=7;                     [If Melee or Range]
+    !!MF:N?y4;                          [damage receiving stack]
+    !!BG:N?y5;
+    !!BMy4:I?y7 H?y6;                   [Monster Side Index and max HP]
+    !!if&y4=21;                         [if any defender stack and defender side]
+      !!MF:F?y9;
+      !!VRy6:*33:100;                   [get 33% of max HP of Raid Boss]
+      !!MF&y9>y6:Fy6;                   [Set damage to max 40%]
+    !!en;
+  !!en;
+!!en;
+
+
+*The damage a raid boss can receive is never more than 33% of his max HP with one cast for magical damage
+!?MR1&i^Is_Raid_Boss_Fight^;
+
+!!MW:Cv998/v999/v1000/?y10;             [check if wandering monster and get WM number]
+!!FU&y10=0:E;                           [Exit if no caster enchantment is set active]
+!!UN:C42149568/4/?y10;                  [Physical Damage]
+!!if|y10=4462398/y10=4455011/y10=4456676;[Only run when melee or shooting damage]
+  !!BG:A?y3;
+    !!if|y3=6/y3=7;                     [If Melee or Range]
+    !!MR:N?y4;                          [damage receiving stack]
+    !!BG:N?y5;
+    !!BMy4:I?y7 H?y6;                   [Monster Side Index and max HP]
+    !!if&y4=21;                         [if any defender stack and defender side]
+      !!MR:F?y9;
+      !!VRy6:*33:100;                   [get 33% of max HP of Raid Boss]
+      !!MR&y9>y6:Fy6;                   [Set damage to max 40%]
+    !!en;
+  !!en;
+!!en;
+
+
+*Raid Boss has a chance to deal tripple damage against single untis.
+This is done to reduce the chance of strong single units tanking the monster because of heal.
+!?FU(OnStackToStackDamage)&i^Is_Raid_Boss_Fight^;
+!!FU&x9=1:E;                            [Exit calculation for theoretical attack]
+!!MW:Cv998/v999/v1000/?y10; !!FU&y10=0:E;[check if wandering monster and get WM number]
+!!if&x1=21;                             [if any valid battlestack]
+  !!if&x2>=0/x2<=20;                    [if any valid battlestack]
+    !!BMx2:N?y2;                        [get number of units]
+    !!VRy1:S0R1;                        [make a coin flip]
+    !!VRx4&y1=1/y2=1:*3;                [with 50% chance to tripple damage]
+  !!en;
+!!en;
+
+
+*Raid Boss monsters are vulnerable to a certain magic, meaning spells deal +50% damage
+*The damage a raid boss can receive is never more than 33% of his max HP with one cast for magical damage
+!?MR1&i^Is_Raid_Boss_Fight^;
+
+!!BG:A?y1;                              [Aktion in y1]
+!!FU&y1<>1:E;                           [exit if no hero cast]
+!!BG:S?y2;                              [spell number]
+!!MR:N?y3;                              [target stack]
+!!FU&y3<21:E;                           [exit if attacker stack]
+!!FU&y2<=9|y2>69:E;                     [exit for wrong spell IDs]
+!!BMy3:I?y10 H?y11 T?y5;                [Monster Side Index and max HP]
+!!MR:F?y6;                              [get spell damage]
+!!if&y3=21;                             [if raid boss stack]
+
+  !!VRy70:Sy5%4;                        [Modulo of 4 to get vulnerability]
+  !!VRy71:S125;                         [Set 125% as base magic damage. If monster is vulnerable to certain spells deal 200% damage]
+
+  !!if|y2=17/y2=19/y2=25;               [Air Spells]
+    !!VRy71&y70=0:S200;                 [set increased damage]
+  !!en;
+
+  !!if|y2=16/y2=20;                     [Water Spells]
+    !!VRy71&y70=1:S225;
+  !!en;
+
+  !!if|y2=18/y2=23/y2=24;               [Earth Spells]
+    !!VRy71&y70=2:S200;
+  !!en;
+
+  !!if|y2=21/y2=22/y2=26;               [Fire Spells]
+    !!VRy71&y70=3:S200;
+  !!en;
+  0 - Air
+  1 - Water
+  2 - Earth
+  3 - Fire
+  !!VRy6:*y71:100;                      [Deal +50% damage]
+  !!VRy11:*33:100;                      [get 33% of max HP of Raid Boss]
+  !!VRy6&y6>y11:Sy11;                   [Set new damage if it was to high]
+  !!MR&y6>0:Fy6;                        [Apply increased damage]
+!!en;
+
+
+*The raid boss is immune vs Death Stare attack
+!?MF1&i^Is_Raid_Boss_Fight^;
+
+!!MW:Cv998/v999/v1000/?y10;             [check if wandering monster and get WM number]
+!!FU&y10=0:E;                           [Exit if no caster enchantment is set active]
+!!UN:C42149568/4/?y10;                  [Physical Damage]
+!!if&y10=4460149;                       [Only run when death gaze damage]
+  !!BG:A?y3;
+    !!if|y3=6/y3=7;                     [If Melee or Range]
+    !!MF:N?y4;                          [damage receiving stack]
+    !!BG:N?y5;
+    !!BMy4:I?y7 H?y6;                   [Monster Side Index and max HP]
+    !!if&y4=21;                         [if any defender stack and defender side]
+      !!MF:F0;
+    !!en;
+  !!en;
+!!en;
+
+
+*Raid Boss monsters loose all debuffs at end of every combat round
+Also if speed is below 4 at a new combat round it will reset
+Also after 8 combat round stats begin to increase slowly
+
+!?FU(OnCombatRound)&i^Is_Raid_Boss_Fight^/v997>=1;
+!!MW:Cv998/v999/v1000/?y10;             [check if wandering monster and get WM number]
+!!FU&y10=0:E;                           [Exit if none]
+
+!!re i/21/41;
+    !!FU(AC_ResetSpellFromStack):Pi/42; [42 Curse]
+    !!FU(AC_ResetSpellFromStack):Pi/52; [52 Misfortune]
+    !!FU(AC_ResetSpellFromStack):Pi/45; [45 Weakness]
+    !!FU(AC_ResetSpellFromStack):Pi/54; [54 Slow]
+    !!FU(AC_ResetSpellFromStack):Pi/50; [50 Sorrow]
+    !!FU(AC_ResetSpellFromStack):Pi/52; [52 Misfortune]
+    !!FU(AC_ResetSpellFromStack):Pi/62; [62 Blind]
+    !!FU(AC_ResetSpellFromStack):Pi/59; [59 Berserk]
+    !!FU(AC_ResetSpellFromStack):Pi/60; [60 Hypnotize]
+    !!FU(AC_ResetSpellFromStack):Pi/61; [61 Forgetfulness]
+    *!FU(AC_ResetSpellFromStack):Pi/70;[Stone]
+    *!FU(AC_ResetSpellFromStack):Pi/71;[Poison]
+    !!FU(AC_ResetSpellFromStack):Pi/72; [Bind]
+    *!FU(AC_ResetSpellFromStack):Pi/73;[Disease]
+    !!FU(AC_ResetSpellFromStack):Pi/74; [Paralyze]
+    *!FU(AC_ResetSpellFromStack):Pi/75;[Age]
+!!en;
+
+!!BM21:S?y5 H?y6;                       [Get Creature Speed and HP]
+!!BM21&y5<4:S4;                         [reset speed to 4 if it is to low]
+!!BM21&v997>=8:Sd1 Ad2 Dd2 U2/d25;      [slowly increase stats after round 8]
+
+!!VRy1:S0;
+!!SN:W^Raid_Boss_special_chance^/?y3;   [get chance for special events to trigger]
+!!VRy4:S0R80; !!VRy1&y4<=y3:S1;         [Small chance to activate trigger]
+!!BM21&y1=1:U3/d1;                      [small chance to give him a shoot once in a while]
+
+
+*Raid Boss monsters have a 25% Magic Resistance
+!?MR2&i^Is_Raid_Boss_Fight^;
+!!MW:Cv998/v999/v1000/?y10;             [check if wandering monster and get WM number]
+!!FU&y10=0:E;                           [Exit if none]
+
+!!MR:N?y1;                              [Get Creature Number]
+!!BMy1:I?y2 T?y3;                       [Get Creature Side]
+!!if&y1>=21/y1<=41;                     [if an enemy stack]
+  !!MR:F?y40;
+  !!VRy40:+25;                          [Add MR from com class to current MR value]
+  !!VRy40&y40>100:S100;
+  !!MR:Fy40;                            [Apply increased resistance chance to that stack temporarily]
+!!en;
+
+
+*Regeneration echantment. Regenerates around 15% of max HP every round when its the commanders turn
+!?FU(OnBattleStackRegeneration)&i^Is_Raid_Boss_Fight^;
+!#VA(stackId:x) (finalValue:x) (stdValue:x);
+!!MW:Cv998/v999/v1000/?y10;             [check if wandering monster and get WM number]
+!!SN:W^Raid_Boss_Ench_21_%Y10^/?y1;     [check regeneration enchantment variable]
+!!SN:W^Raid_Boss_special_chance^/?y3;   [get chance for special events to trigger]
+!!VRy4:S0R100; !!VRy1&y4<=y3:S1;        [Small chance to activate trigger]
+!!FU|y10=0/y1=0:E;                      [Exit if none]
+!!BM(stackId):T?(monType:y) H?(health:y);[get monster type and health]
+!!VR(health)::20;                       [5 percent of health]
+!!VR(finalValue)&(stackId)>=21/(stackId)<=41:S(stdValue)+(health); [set regeneration value]
+
+
+*Summoner, every round calls a pack of elementals to the battlefield
+!?BA0&i^Is_Raid_Boss_Fight^;
+!!SN:W^Raid_Boss_Summoner_Round^/-1;    [Set flag to current battle round]
+!?FU(OnBattleReplay)&i^Is_Raid_Boss_Fight^;
+!!SN:W^Raid_Boss_Summoner_Round^/-1;    [Set flag to current battle round]
+
+!?FU(OnBattleStackObtainsTurn)&i^Is_Raid_Boss_Fight^;
+!#VA(stackSide:x) (stackInd:x);
+
+!!MW:Cv998/v999/v1000/?y10;             [check if wandering monster and get WM number]
+!!SN:W^Raid_Boss_Ench_22_%Y10^/?y1;     [check regeneration enchantment variable]
+!!SN:W^Raid_Boss_special_chance^/?y3;   [get chance for special events to trigger]
+!!VRy4:S0R100; !!VRy1&y4<=y3:S1;        [Small chance to activate trigger]
+!!FU|y10=0/y1=0:E;                      [Exit if none]
+
+!!SN:W^Raid_Boss_Summoner_Round^/?y1;   [Set flag to current battle round]
+!!FU&v997=y1:E;                         [Exit if he already summoned this round]
+
+!!VRy20:Si^battle_current_stack^;
+!!BMi^battle_current_stack^:T?y2 I?y3 H?y60; [Get type and side of current battlestack and health points]
+!!FU|y3=0/y20<>21:E;                    [Exit if it is not the raid boss]
+
+!!VRy61:Sy60:100:4;                     [get level of raid boss]
+!!FU(Raid_Boss_CheckIfPossibleToSummon):Py3/?y21; !!FU&y21=0:E;
+!!BU:S112/y61/32/1/0/0;                 [Summon elementals at a random position]
+!!FU(Raid_Boss_Set_Summon_Stats):P32;
+!!BU:S113/y61/66/1/0/0;                 [Summon elementals at a random position]
+!!FU(Raid_Boss_Set_Summon_Stats):P66;
+!!BU:S114/y61/134/1/0/0;                [Summon elementals at a random position]
+!!FU(Raid_Boss_Set_Summon_Stats):P134;
+!!BU:S115/y61/168/1/0/0;                [Summon elementals at a random position]
+!!FU(Raid_Boss_Set_Summon_Stats):P168;      
+!!SN:W^Raid_Boss_Summoner_Round^/v997;  [Set flag to current battle round]
+
+
+!?FU(Raid_Boss_Set_Summon_Stats);
+x1=battlefield position
+!!BU:Ex1/?y1;                           [get stack number from battlefield position]
+!!VRy22:Si^timerMonth^;                 [Put Current Week in y22]
+!!if&y1>21;
+  !!BMy1:H50 A20 D20 U1/25 U2/75 U3/0 E0;[Set Stats and Set casts and shots to zero]
+  !!BMy1&y22>5:H75 A30 D30 U1/50 U2/100 U3/0 E0; [Set Stats and Set casts and shots to zero]
+  !!BMy1&y22>10:H100 A40 D40 U1/75 U2/125 U3/0 E0; [Set Stats and Set casts and shots to zero]
+!!en;
+
+
+; Check if there are few than 21 stacks on the battlefield
+!?FU(Raid_Boss_CheckIfPossibleToSummon);
+!#VA(side:x) (isEligible:x);
+
+!!VR(isEligible):S(FALSE);
+!!UN:C6919200/4/?(value:y);
+!!VR(address:y):S(side) *4 +21692 +(value);
+!!UN:C(address)/4/?(stackNum:y);
+!!VR(isEligible)&(stackNum)<=20:S(TRUE);
+
+
+*50% chance to act twice in combat with Positive Spirit Enchantment
+!?FU(OnCombatRound)&i^battle_round^>=0/i^Is_Raid_Boss_Fight^;
+!!MW:Cv998/v999/v1000/?y10; !!FU&y10=0:E;[check if wandering monster and get WM number]
+!!SN:W^Raid_Boss_acting stack^/-1;      [reset act twice counter and battle stack each new battle round]
+!!if&i^battle_round^>=0;
+  !!re i/0/41;                          [loop all stacks and reset]
+    !!SN:W^Raid_Boss_abilityCounter_%i^/0;
+  !!en;
+!!en;
+
+!?FU(OnBeforeBattleAction)&i^battle_round^>=0/i^Is_Raid_Boss_Fight^;
+!!MW:Cv998/v999/v1000/?y10;             [check if wandering monster and get WM number]
+!!SN:W^Raid_Boss_Ench_23_%Y10^/?y1;     [check act twice enchantment variable]
+!!SN:W^Raid_Boss_special_chance^/?y3;   [get chance for special events to trigger]
+
+*!VRy1:S1; Test
+
+!!VRy4:S0R50; !!VRy1&y4<=y3:S1;         [Small chance to activate trigger]
+!!FU|y10=0/y1=0:E;                      [Exit if none]
+
+!!SN:W^Raid_Boss_acting stack^/-1;
+!!BG:A?y1 N?y2 E?y6;                    [Get action type and stack number and attacked stack]
+!!FU&y1<>2/
+     y1<>6/
+     y1<>7/
+     y1<>9/
+     y1<>10/
+     y1<>11:E;                          exit for wrong condition
+
+!!BMy2:T?y3 I?y4 N?y5;                  [get type and side]
+!!if&y2=21;                             [If raid boss]
+  !!VRy20:S0R1;                         [make a coin flip]
+  !!if&y6>=0;                           [if a valid target stack]
+    !!BMy6:N?y13 F?y14 F?y15;           [get number of attacked monsters]
+    !!VRy14:&4194304;                   [Check for Summoning flag]
+    !!VRy15:&12582912;                  [Check for Clone flag]
+    !!VRy20|y13=1/y14>0/y15>0:S1;       [Set higher chance to act again if just one unit, or summoned or cloned]
+  !!en;
+  !!SN&y20=1:W^Raid_Boss_acting stack^/y2; [set and save stack that should act twice]
+!!en;
+
+
+!?FU(OnBattleActionEnd)&i^Is_Raid_Boss_Fight^;
+!!MW:Cv998/v999/v1000/?y10; !!FU&y10=0:E;[check if wandering monster and get WM number]
+!!SN:W^Raid_Boss_acting stack^/?y1;
+!!if&y1>=0/y1<=41;                      [if a valid battle stack]
+  !!SN:W^Raid_Boss_abilityCounter_%Y1^/?y2; [check ability counter]
+  !!BMy1&y2=0:Fd~(MON_FLAG_ACTED);      [set act twice flag for stack]
+  !!SN:W^Raid_Boss_abilityCounter_%Y1^/d-1; [reduce ability counter]
+  !!VRz1&y2=0/y1=21:S^{~r}Raid Boss acts again{~}^;
+  !!BU&y2=0/y1=21:Mz1;
+!!en;
+
+!?FU(OnBeforeBattleStackTurn)&i^Is_Raid_Boss_Fight^;
+!!MW:Cv998/v999/v1000/?y10; !!FU&y10=0:E;[check if wandering monster and get WM number]
+!!SN:W^Raid_Boss_acting stack^/?y1; 
+!!FU&y1=-1:E;                           [exit if no valid stack]
+!!BMy1:T?y2 N?y3;                       [get type and number]
+!!FU|y2=-1/y3<=0;                       [exit if not valid]
+!!SN:W^Raid_Boss_acting stack^/x1;      [set stack that should act twice]
+
+
+*AOE attack for Raid Boss. 50% damage to surrounding target units
+!?MF1&i^Is_Raid_Boss_Fight^;
+!!MW:Cv998/v999/v1000/?y10;             [check if wandering monster and get WM number]
+!!SN:W^Raid_Boss_Ench_24_%Y10^/?y1;     [check AOE attack enchantment variable]
+!!SN:W^Raid_Boss_special_chance^/?y3;   [get chance for special events to trigger]
+!!VRy4:S0R100; !!VRy1&y4<=y3:S1;        [Small chance to activate trigger]
+!!FU|y10=0/y1=0:E;                      [Exit if none]
+
+!!UN:C42149568/4/?y10;                  [Get Physical Damage type]
+!!FU&y10<>4462398:E;                    [Melee Damage]
+
+!!BG:A?y1;                              [Aktion in y1]
+!!FU&y1<>6:E;                           [or Melee]
+!!BG:N?y1;                              [Attacking Stack]
+!!if&y1>=21/y1<=41;
+!!MF:N?y4;                              [damage receiving stack]
+!!BMy4:T?y40;                           [Get Type in y40]
+
+!!BMy1:I?y5;                            [Side index as for heroes (0:left, 1:right)]
+!!BMy4:P?y1 I?y30;                      [get target position and Side]
+!!MF:F?y10;                             [get damage of melee attack]
+!!VRy10::2;                             [Make 50% of damage]
+
+!!FU(AC_Function_126):Py1/0/?y3;
+!!BU&y3>=0/y3<=186:Ey3/?y8;             [-2 if there is alive stack at that position]
+!!BMy8&y8>=0/y8<=41/y4<>y8:I?y40;       [apply damage to surrounding creatures]
+!!BMy8&y8>=0/y8<=41/y4<>y8/y40=y30:Ky10;[apply damage to surrounding creatures if same side]
+
+!!FU(AC_Function_126):Py1/1/?y3;
+!!BU&y3>=0/y3<=186:Ey3/?y8;             [-2 if there is alive stack at that position]
+!!BMy8&y8>=0/y8<=41/y4<>y8:I?y40;       [apply damage to surrounding creatures]
+!!BMy8&y8>=0/y8<=41/y4<>y8/y40=y30:Ky10;[apply damage to surrounding creatures if same side]
+
+!!FU(AC_Function_126):Py1/2/?y3;
+!!BU&y3>=0/y3<=186:Ey3/?y8;             [-2 if there is alive stack at that position]
+!!BMy8&y8>=0/y8<=41/y4<>y8:I?y40;       [apply damage to surrounding creatures]
+!!BMy8&y8>=0/y8<=41/y4<>y8/y40=y30:Ky10;[apply damage to surrounding creatures if same side]
+
+!!FU(AC_Function_126):Py1/3/?y3;
+!!BU&y3>=0/y3<=186:Ey3/?y8;             [-2 if there is alive stack at that position]
+!!BMy8&y8>=0/y8<=41/y4<>y8:I?y40;       [apply damage to surrounding creatures]
+!!BMy8&y8>=0/y8<=41/y4<>y8/y40=y30:Ky10;[apply damage to surrounding creatures if same side]
+
+!!FU(AC_Function_126):Py1/4/?y3;
+!!BU&y3>=0/y3<=186:Ey3/?y8;             [-2 if there is alive stack at that position]
+!!BMy8&y8>=0/y8<=41/y4<>y8:I?y40;       [apply damage to surrounding creatures]
+!!BMy8&y8>=0/y8<=41/y4<>y8/y40=y30:Ky10;[apply damage to surrounding creatures if same side]
+
+!!FU(AC_Function_126):Py1/5/?y3;
+!!BU&y3>=0/y3<=186:Ey3/?y8;             [-2 if there is alive stack at that position]
+!!BMy8&y8>=0/y8<=41/y4<>y8:I?y40;       [apply damage to surrounding creatures]
+!!BMy8&y8>=0/y8<=41/y4<>y8/y40=y30:Ky10;[apply damage to surrounding creatures if same side]
+!!en;
+
+
+*Each Raid Boss has a very low chance to Blind,Root,Paralyze,StoneGaze with attacks
+!?FU(ACM_OnAfterAttack)&i^Is_Raid_Boss_Fight^;
+!!MW:Cv998/v999/v1000/?y10;             [check if wandering monster and get WM number]
+!!FU&y10=0:E;                           [Exit if none]
+!!if&x1=21;                             [If Raid Boss]
+  !!SN:W^Raid_Boss_special_chance^/?y3; [get chance for special events to trigger]
+  !!VRy1:S0R85; !!BMx2&y1<=y3:M70/3/3;  [Stone]
+  !!VRy1:S0R85; !!BMx2&y1<=y3:M71/3/3;  [Poison]
+  !!VRy1:S0R85; !!BMx2&y1<=y3:M72/3/3;  [Bind]
+  !!VRy1:S0R85; !!BMx2&y1<=y3:M73/3/3;  [Disease]
+  !!VRy1:S0R85; !!BMx2&y1<=y3:M74/3/3;  [Paralyze]
+  !!VRy1:S0R85; !!BMx2&y1<=y3:M75/3/3;  [Age]
+!!en;
+
+
+*Removes Stack Experience from Raid Boss monsters
+!?FU(OnSetupBattlefield)&i^Is_Raid_Boss_Fight^;
+!!UN:P900/?y2;                          [Check Stack Experience option]
+!!FU(Raid_Boss_Remove_SE)&y2=1:P;       [Run function to give Stack Exp to units]
+
+ [Add experience ranks to neutral stacks]
+!?FU(Raid_Boss_Remove_SE);
+!!DO(Raid_Boss_Remove_SE_1)/21/41/1:P;
+
+ [Add ranks to Neutral Stacks if option enabled]
+!?FU(Raid_Boss_Remove_SE_1);
+!!BMx16:T?y1 N?y2;                      [Creature type (y1), number (y2)]
+!!FU|y1<0/y2<1:E;                       [Exit if no stack at this number]
+!!FU&y1>=174/y1<=191:E;                 [Exit if it's a Commander]
+!!VRy5:Sx16 *-1 -1;                     [Negative stack index: y5]
+!!EAy5:E0/12/d/d;                       [Set stack to rank y4]
+
+
+*After every battle reset the variable if it is a Raid Boss fight
+*also reward is handled in this function
+!?FU(OnAfterBattle);
+!!VRi^Is_Raid_Boss_Fight^:S(FALSE);     [reset Is Raid Boss Fight variable after every combat]
+
+!!MW:Cv998/v999/v1000/?y10;             [check if wandering monster and get WM number]
+!!FU&y10=0:E;                           [Exit if it wasnt a raid boss fight]
+!!BA:H0/?y1;                            [Attacking Hero]
+!!HEy1:O?y9;                            [get owner of this hero]
+!!if&y9>=0;                             [if hero still has an owner it usually means he has won the battle]
+  !!SN:W^Raid_Boss_Difficulty^/?y2;     [Raid Boss difficulty determines the number the reward function is executed]
+  !!SN:W^Raid_Boss_Ench_Roll_%Y10_4^/?y90; !!VRy2&y90>0:+1; [Check if Raid Boss has Elite Enchantment and increase reward if it is]
+  !!SN:W^Raid_Boss_Ench_Roll_%Y10_5^/?y90; !!VRy2&y90>0:+1; [Check if Raid Boss has Champion Enchantment]
+  !!re i/0/y2;                          [loop x times to give rewards]
+  !!FU(Raid_Boss_Reward):Py1/y9;        [Pass hero and player owner run reward function]
+  !!en;  
+!!en;
+
+!!MW:Cv998/v999/v1000/?y10;             [check if wandering monster and get WM number]
+!!SN&y10>0:W^Raid_Boss_Monster_%Y10^/0; [reset timer if monster was defeated]
+!!FU(Raid_Boss_Enchantments)&y10>0:Py10/0; [input WM number and delete previous set enchantments if monster was killed or deleted]
+
+
+End of Combat scripting
+****************************************************************************************************
+
+
+
+
+
+
+****************************************************************************************************
+*code to set new creature name and description for a stack
+!?FU(OnBattleScreenMouseClick)&i^mouse_battleHex^>0/i^mouse_battleHex^<186/i^Is_Raid_Boss_Fight^;
+!!MW:Cv998/v999/v1000/?y10;             [check if wandering monster and get WM number]
+!!FU&y10=0:E;
+
+!!CM:D?y1;                              [get click position]
+!!BU:Ey1/?y2;                           [check if a monster is at that place]
+!!FU&y2=-1:E;                           [get monster ID at position and exit if no monster]
+!!if&y2=21;                             [if clicked on stack 21]
+  !!BMy2:H?y3 T?y5;                     [get Hit points in y3 to determine the level]
+  !!VRy3::1000;
+  !!VRy3&y3<=0:S1;
+  !!VRy70:Sy5%4;                        [Modulo of 4 to get vulnerability]
+  !!SN&y70=0:T^raid_monster.Air^/?z23; !!SN&y70=1:T^raid_monster.Water^/?z23; !!SN&y70=2:T^raid_monster.Earth^/?z23; !!SN&y70=3:T^raid_monster.Fire^/?z23;
+  !!FU(Raid_Boss_Enchantments):Py10/2;  [input WM number and return four random enchantments]
+  !!SN:T^raid_monster.battle_text^/?z1/^level^/y3/^ench1^/z2/^ench2^/z3/^ench3^/z4/^ench4^/z5/^ench5^/z6/^vuln^/z23;  
+  !!BMy2:Z?(stackStruct:y);             [Get the stack struct]
+  !!FU(WOG_AllocBattleStr):Pz1/?(newDescAddr:y); [get string address]
+  !!UN:C(stackStruct)/144/(UNC_INT)/(newDescAddr); [set new description]
+!!en;
+
+
+Code to set description for commanders. Requires complex code to override window on commanders description
+!?FU(OnStartOrLoad); 
+!!SN:L^EraPlugins\erm_hooker.era^/?y1;
+!!FU&y1=0:E;
+
+!!SN:Ay1/^SetHook^/?y2;
+!!SN:Ey2/1/4621577/(Raid_Boss_beforeCreatureInfoDlg_Show); [right click] 468509]
+!!SN:Ey2/1/4621584/(Raid_Boss_beforeCreatureInfoDlg_Show); [left click] 468510]
+!!VRi^Is_Raid_Boss_Fight^:S(FALSE);
+
+
+!?FU(Raid_Boss_beforeCreatureInfoDlg_Show);
+!!MW:Cv998/v999/v1000/?y10;             [check if wandering monster and get WM number]
+!!FU&y10=0:E;
+
+!!UN:Cx1/24/4/?y1;                      [get creature dlg]
+!!if&y1>0;
+  !!UN:Cx1/8/4/?y2 Cy2/8/4/?y3;         [get stack from stack lmao]
+  !!UN:Cy3/52/4/?t;                     [get creature type]
+    !!if&t>=183/t<=191;                 [if defender npc]
+***Perrys code
+      !!UN:Cy3/244/4/?y23 Cy3/248/4/?y2;[get monster side and index]
+      !!VRy21:Sy23 *21 +y2;             [get stack id]
+      !!BMy21:I?y23 S?y24 T?y5;         [get monster type and side index]
+      !!BHy23:N?y25;                    [Get hero or commander ID]
+
+      !!if&y21>=21/y21<=41;             [if any commander and a hero]
+          !!BMy21:H?y31;                [get Hit points in y3 to determine the level]
+          !!VRy31::1000;
+          !!VRy31&y31<=0:S1;
+
+          !!VRy70:Sy5%4;                [Modulo of 4 to get vulnerability]
+          !!SN&y70=0:T^raid_monster.Air^/?z23; !!SN&y70=1:T^raid_monster.Water^/?z23; !!SN&y70=2:T^raid_monster.Earth^/?z23; !!SN&y70=3:T^raid_monster.Fire^/?z23;  
+          !!FU(Raid_Boss_Enchantments):Py10/2; [input WM number and return four random enchantments]
+          !!SN:T^raid_monster.battle_text^/?z-1/^level^/y31/^ench1^/z2/^ench2^/z3/^ench3^/z4/^ench4^/z5/^ench5^/z6/^vuln^/z23;
+***End
+        !!VRy6:S0;
+        !!SN:F^PluginExists^/^new_battle_interface_dlg^;
+        !!VRy6&v1:V^%T(gem_plugin.combat_dlg.enable.creature_info)^;
+
+        !!if&y6;
+          !!FU(H3Dlg_Coords):Py1/?y4/?y5;[get Dlg Position]
+          !!VRy2:V^%T(gem_plugin.combat_dlg.creature_info.description.x)^ Sdy4; [find x]
+          !!VRy3:V^%T(gem_plugin.combat_dlg.creature_info.description.y)^ Sdy5; [find y]
+          !!SN:E6289824/(CALLCONV_THISCALL)/y1/y2/y3; [find item there]
+          !!VRy5:Sv1;                   [save]
+        !!el;
+          !!VRy4:S-1;
+          !!SN:E6288816/2/y1/y4;
+          !!VRy5:Sv1;                   [save]
+        !!en;
+
+        !!if&y5>0;                      [if found]
+          !!UN:Cy5/24/2/?y6 Cy5/26/2/?y7;[get original item position]
+          !!UN:Cy5/28/2/?y8 Cy5/30/2/?y9;[get original item size]
+          !!UN:Cy5/64/4/?y10;           [get font]
+          !!VRy11:Sy10 +4;              [get font name ptr]
+          !!SN:By11/d/?z-2;             [get font name]
+          !!VRy12:S9598952;             [set item address]
+          !!SN:E6286720/2/y5/6/6;       [hide original description text item]
+          !!SN:E6014624/2/y12/y6/y7/y8/y9/z-1/z-2/4/-2/0/0/8; [create new DlgText item with new id at z2 address]
+          !!SN:E6287984/2/y1/y12/-1;    [add item to dlg list]
+        !!en;
+    !!en;
+!!en;
+!!en;
+
+
+****************************************************************************************************
+*Handles rewards
+!?FU(Raid_Boss_Reward);
+
+!!HEx1:B0/?z-10;                        [get hero name]
+!!HEx1:E?y6/?y7/1;                      [get level of this hero]
+!!VRy7:+10;                             [Add more level to give bigger rewards]
+!!SN:W^Advanced_Classes_Mod_Active^/?y1;[Set Mod as active]
+!!VRy50&y1=1:S0R9;                      [generate random number]
+!!VRy50&y1=0:S0R7;                      [generate random number without ACM specific rewards]
+
+**Resources Reward
+!!if&y50=0|y50=1;                       [Double Chance]
+  !!VRy8:Sy7;                           [Set Level to y8]
+  !!VRy8::5 +1;                         [some forumla]
+  !!VRy10:S0R6;                         [generate random resource]
+  !!VRy11&y10<6:S1R3 +y8;               [set value for res]
+  !!VRy11&y10=6:Sy8*750+1000R1500;      [set value for gold]
+  !!VRy11&y10=6/y11<5000:S5000;         [Give at least 5k gold]
+  !!OW:Rx2/y10/dy11;                    [Give Player Resources]
+  !!SN:T^raid_monster.reward_message1^/?z2 Iz2/?z2;
+  !!OW&x2<>-1:Ix2/?y4;                  [get AI (1) or human (0)]
+  !!VRy5&x2<>-1/y4=0:S1;                [human if has owner and that owner is human]
+  !!IF&y5=1:Q2/y10/y11/1/z2;            [If Bonus Show Picture]
+!!en;
+
+**Primary Skill Reward
+!!if|y50=2/y50=3/y50=4;                 [Double Chance]
+  !!VRy5:S31R3;                         [random value for prim stats]
+  !!SN:T^raid_monster.reward_message2^/?z2 Iz2/?z2;
+  !!IF:Q1/y5/1/1/z2;                    [show dialouge]
+  !!HEx1&y5=31:Fd1/d/d/d;               [give appropriate bonus]
+  !!HEx1&y5=32:Fd/d1/d/d;               [give appropriate bonus]
+  !!HEx1&y5=33:Fd/d/d1/d;               [give appropriate bonus]
+  !!HEx1&y5=34:Fd/d/d/d1;               [give appropriate bonus]
+!!en;
+
+**Experience Reward
+!!if&y50=5;                             [Single Chance]
+  !!VRy6&y6>=15000000:S15000000;        [Fix for Var overflow]
+  !!VRy5:Sy6;                           [set to current exp value]
+  !!VRy5:*120:100 -y6;
+  !!VRy5::100 *15 +5000;                [some forumla]
+  !!SN:T^raid_monster.reward_message3^/?z2 Iz2/?z2;
+  !!IF:Q1/17/y5/1/z2;                   [show message to player]
+  !!HEx1:Edy5;                          [Give Experience]
+!!en;
+
+**Artifact Reward
+!!if&y50=6;                             [15=  Give Artifact]
+  !!VRy1:S0R2;
+  !!UN|y1=0/y1=1:J6/2/?y2;              [get a random Treasure artifact  2/3 chance]
+  !!UN&y1=2:J6/4/?y2;                   [get a random Minor artifact  1/3 chance]
+  !!SN:T^raid_monster.reward_message4^/?z2 Iz2/?z2;
+  !!IF&1000/999:Q2/8/y2/1/z2;
+  !!HEx1:Ay2;                           [Give Artifact]
+!!en;
+
+**Spell Reward
+!!if&y50=7;                             [16=  Teach Spell]
+  !!HEx1:A2/0/d/?y15;                   [Check for Spell Book]
+  !!FU&y15=0:E;                         [Exit if no Spell Book]
+  !!FU(ACM_GenerateRandomSpell):P1/4/x1/?y-99; [Function to generate a random level 1-4 spell which skips banned spells]
+  !!if&y-99>=0/y-99<=69;                [Valid Spell]
+    !!HEx1:S7/?y14;                     [7 Wisdom]
+    !!SSy-99:L?y5;                      [Spell Level]
+    !!FU&y5=5/y14<3:E;                  [Exit if Wisdom level not high enough]
+    !!FU&y5=4/y14<2:E;
+    !!FU&y5=3/y14<1:E;
+    !!SN:T^raid_monster.reward_message5^/?z2 Iz2/?z2;
+    !!IF&1000/999:Q2/9/y-99/1/z2;
+    !!HEx1:My-99/1;                     [Give Spell]
+  !!en;
+!!en;
+
+**Stats Reward
+!!if|y50=8/y50=9;                       [18=  Give ACM Reward]
+  !!VRy31:S1R5;                         [currently there are 6 special rewards]
+  !!VRz5&y31=1:S^2 Magic Strength^;
+  !!VRz5&y31=2:S^2% Spell Damage^;
+  !!VRz5&y31=3:S^1% Spell Crit Chance^;
+  !!VRz5&y31=4:S^2% Spell Crit Damage^;
+  !!VRz5&y31=5:S^1% Physical Crit Chance^;
+  !!VRz5&y31=6:S^2% Physical Crit Damage^;
+  !!SN&y31=1:W^ACM_Reward_Magic_Strength_%X1^/d2; [Add Bonus stat to hero]
+  !!SN&y31=2:W^ACM_Reward_Spell_Damage_%X1^/d2; [...]
+  !!SN&y31=3:W^ACM_Reward_Spell_Crit_Chance_%X1^/d1; [...]
+  !!SN&y31=4:W^ACM_Reward_Spell_Crit_Damage_%X1^/d2; [...]
+  !!SN&y31=5:W^ACM_Reward_Physical_Crit_Chance_%X1^/d1; [...]
+  !!SN&y31=6:W^ACM_Reward_Physical_Crit_Damage_%X1^/d2; [...]
+  !!SN:T^raid_monster.reward_message6^/?z2 Iz2/?z2;
+  !!IF&1000/999:Q2/11/3/1/^%Z2^;
+!!en;
+
+!!UN:R2;                                [Redraw]
+
+
+*************************************************************************************
+*Restore Random Hero script variable and Karmic Battle variable
+!?FU(OnAfterBattleUniversal)&i^Raid_Boss_Mod_Active^=1;
+!!SN:W^Raid_Boss_Random_Hero^/?y1;
+!!SN:W^Raid_Boss_Mod_Active^/?y2;
+
+!!UN&y1=1/y2=1:P72/1;                   [activate random hero option again]
+!!VRi^wog_72_randHeroActive^&y1=1/y2=1:S(TRUE);
+
+!!SN:W^Raid_Boss_Karmic_Battle^/?y1;
+!!UN&y1=1/y2=1:P38/1;                   [activate karmic battle option again]

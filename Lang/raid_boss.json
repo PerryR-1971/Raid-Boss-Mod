@@ -1,0 +1,75 @@
+{
+	"raid_monster": {
+		
+		"elite": 							"Elite",
+		
+		"champion": 						"Champion",
+		
+		"raid_boss": 						"{~r}%Z11 Raid Boss{~}",	
+		
+		"enchant_text": 					"Our scouts say the @name@ has the following attributes:{~o}\n- @ench1@\n- @ench2@\n- @ench3@\n@fill4@ @ench4@\n@fill5@ @ench5@{~}\nVulnerability: @vuln@",
+		
+		"reward_text": 						"This strong monster wants to raid your city. Stop it before it reaches your town and kill it for a reward.",	
+
+		"dialogue_hint": 					"Days alive: {~gold}@gold@{~}        Rewards: {~gold}@reward@{~}",		
+		
+		"town_siege": 						"{~red}%Z5 players town was under Siege!{~}\n\nThe raiding monster stole some of your resources.\n\n  %Y40 {~>SMALRES.def:0}\n  %Y41 {~>SMALRES.def:1}\n  %Y42 {~>SMALRES.def:2}\n  %Y43 {~>SMALRES.def:3}\n  %Y44 {~>SMALRES.def:4}\n  %Y45 {~>SMALRES.def:5}\n  %Y46 {~>SMALRES.def:6}",
+			
+		"mon_appears": 						"{~red}Attention{~}\n\n{~Yellow}A strong raiding monster appeared near the @color@ player's town!{~}",
+		
+		"battle_text": 						"{~red}Raid Boss lvl: @level@{~}\n\n@ench1@\n@ench2@\n@ench3@\n@ench4@\n@ench5@\n\nMagic Resistance: 25%     Vulnerability: @vuln@",
+		
+		"reward_message1": 					"{~r}A glorius victory{~}\n\nDefeating the Raid Boss %Z-10 is rewared with some resources:",
+		"reward_message2": 					"{~r}A glorius victory{~}\n\nDefeating the Raid Boss %Z-10 is rewared with a primary skill point:",
+		"reward_message3": 					"{~r}A glorius victory{~}\n\nDefeating the Raid Boss %Z-10 gains some of the experience points required for the next level:",	
+		"reward_message4": 					"{~r}A glorius victory{~}\n\nDefeating the Raid Boss %Z-10 gets an artifact:",		
+		"reward_message5": 					"{~r}A glorius victory{~}\n\nDefeating the Raid Boss %Z-10 learns a new spell:",
+		"reward_message6": 					"{~r}A glorius victory{~}\n\nDefeating the Raid Boss %Z-10 is rewared with:\n\n+{~orange}%Z5{~}",
+		
+		"diff_header": 						"Select Raid Boss Difficulty\nRight-click system options to call settings again",
+		"diff_level1": 						"Normal - moderate stats scaling. Medium reward chance.",
+		"diff_level2": 						"Hard - 150% stats scaling. High reward chance.",
+		"diff_level3": 						"Extreme - 200% stats scaling. Very high reward chance, multiple rewards.",
+		
+		"Enchantment_1":					"Strong",
+		"Enchantment_2":					"Extra Strong",
+		"Enchantment_3":					"Fast",
+		"Enchantment_4":					"Extra Fast",
+		"Enchantment_5":					"Pack",
+		"Enchantment_6":					"Horde",
+		"Enchantment_7":					"Resistant",
+		"Enchantment_8":					"Extra Resistant",
+		"Enchantment_9":					"Buffed",
+		"Enchantment_10":					"Enchanted",
+		"Enchantment_11":					"Fire Shield",
+		"Enchantment_12":					"Lucky",
+		"Enchantment_13":					"Caster",
+		"Enchantment_14":					"Multicaster",
+		"Enchantment_15":					"Multiattack",
+		"Enchantment_16":					"Extra Multiattack",
+		"Enchantment_17":					"Specter",
+		"Enchantment_18":					"Ghost",
+		"Enchantment_19":					"Spectral hit",
+		"Enchantment_20":					"Spectral impact",
+		"Enchantment_21":					"Regeneration",
+		"Enchantment_22":					"Summoner",
+		"Enchantment_23":					"Positive Spirit",
+		"Enchantment_24":					"Area Attack"		
+		
+		"red":								"red",
+		"blue":								"blue",
+		"tan":								"tan",
+		"green":							"green",
+		"orange":							"orange",
+		"purple":							"purple",
+		"teal":								"teal",
+		"pink":								"pink",
+		
+		"Air":								"{~white}Air{~}",
+		"Water":							"{~blue}Water{~}",
+		"Earth":							"{~green}Earth{~}",
+		"Fire":								"{~red}Fire{~}",
+		
+	},
+
+}
