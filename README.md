@@ -62,7 +62,8 @@ currently the spawn chance of the monsters is set to 15% and it increases by +1%
 -----------------------------------------------------------------------------------------------------------------------
 
 FEEDBACK
------------------------------------------------------------------------------------------------------------------------
+
+
 For general feedback and bug report you can join the HoMM 3.5 ERA Mods discord server:  
 [Discord Server](https://discord.gg/hCTMfVq6w5)  
 
