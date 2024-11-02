@@ -46,11 +46,17 @@ currently the spawn chance of the monsters is set to 15% and it increases by +1%
 
 
 !!SN:W^Monster_Alive_Time^/10;          [The value how long monsters stay alive on the adventure map. Recommended: 10days]
+
 !!SN:W^Raid_Boss_Spawn_Chance^/15;      [The chance by which monsters spawn on the map. Recommended 10%]
+
 !!SN:W^Raid_Boss_Spawn_Radius^/20;      [The radius around towns that is possible to spawn a monster. Recommended 20 x and y radius]
+
 !!SN:W^Raid_Boss_Max_Monsters^/10;      [Set the amount of wandering monsters that can be active at the same time, recommended around 10]
+
 !!SN:W^Raid_Boss_Spawn_Cooldown^/5;     [Set number in days in which a monster cannot spawn after one was spawned. Recommended 7 days]
+
 !!SN:W^Raid_Boss_special_chance_base^/1;[set chance for special events. Recommended 1%]
+
 !!SN:W^Raid_Boss_start_delay^/0;        [set the number in days which the monster does not spawn from the beginning of the game. Recommended 28 days]
 
 -----------------------------------------------------------------------------------------------------------------------
