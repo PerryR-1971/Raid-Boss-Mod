@@ -1,7 +1,4 @@
-# Raid Boss v1.0
-
-> Expecatation Management: this mod is not a recreation of the Raid Boss concept from Master of Puppet Mod. It will not feature big new unit models appearing on the map. However there is some inspiration from it. The goal of this mod is to create additional game content during your normal random map gameplay. Take it or leave it. However I do believe this mod has a lot of random elements which will offer you some surprises and create a couple of ineresting and fun fights. 
-
+# Raid Boss Mod 1.0
 
 ## Raid Boss Mod:
 - Each day theres a Chance a monster spawns near a humans players towns. 
@@ -9,9 +6,17 @@
 - The monster can be killed for a specific reward. The higher the selected difficulty, the more reward tokens you will get. 
 - If the monster reaches your town it will steal money based on game time, but it will not engage in a fight with the player.
 - Each monster has three "enchantments" that will make it unique and prove a big challenge for the player.
-- There is an Elite and Champion version of the Raid Boss, which will be even more dangerous. These version have a small chance to spawn. 
+- There is an Elite and Champion version of the Raid Boss, which will be even more dangerous. These version have a small chance to spawn.* 
 
+-----------------------------------------------------------------------------------------------------------------------
+## LATEST CHANGELOG
+2024-11-02 Release (1.0) by *PerryR*
 
+-----------------------------------------------------------------------------------------------------------------------
+
+> Expecatation Management: this mod is not a recreation of the Raid Boss concept from Master of Puppet Mod. It will not feature big new unit models appearing on the map. However there is some inspiration from it. The goal of this mod is to create additional game content during your normal random map gameplay. Take it or leave it. However I do believe this mod has a lot of random elements which will offer you some surprises and create a couple of ineresting and fun fights. 
+
+-----------------------------------------------------------------------------------------------------------------------
 Currently the following enchantments are available
 
 + Strong (More HP and Damage)
@@ -35,7 +40,7 @@ Most echantment is available in two Levels, a lower and a harder one. Since the 
 There are a couple of anti-cheese mechanics implemented, so dont be to surprised if you cannot perma blind or slow the boss.
 The level of the Raid Boss is based on its HP.
 Each Raid Boss has an vulnerabilty to a certain magic school, these spell will deal double damage then.
-
+-----------------------------------------------------------------------------------------------------------------------
 
 How to change settings:
 currently the spawn chance of the monsters is set to 15% and it increases by +1% for each game day until it resets with an event. If you just interested in testing you can increase the chance by editing the erm file inside the mod folder. The following settings can be changed:
@@ -54,7 +59,11 @@ currently the spawn chance of the monsters is set to 15% and it increases by +1%
 !!SN:W^Raid_Boss_special_chance_base^/1;[set chance for special events. Recommended 1%]
 
 !!SN:W^Raid_Boss_start_delay^/0;        [set the number in days which the monster does not spawn from the beginning of the game. Recommended 28 days]
+-----------------------------------------------------------------------------------------------------------------------
 
-
+FEEDBACK
+-----------------------------------------------------------------------------------------------------------------------
+For general feedback and bug report you can join the HoMM 3.5 ERA Mods discord server:  
+[Discord Server](https://discord.gg/hCTMfVq6w5)  
 
 
