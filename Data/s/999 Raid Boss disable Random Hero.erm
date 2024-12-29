@@ -1,4 +1,13 @@
 ZVSE2
+*disable some WoG scripts or options that are currently not compatible with Raid Boss mod
+
+
+!?FU(OnGameEnter)&i^Raid_Boss_Mod_Active^=1;
+!!UN:P21/0;                             [disable Freelancer's Guild Script]
+
+!?FU(OnEveryDay)&i^Raid_Boss_Mod_Active^=1;
+!!UN:P21/0;                             [disable Freelancer's Guild Script]
+
 
 Function to set up battle stats of Raid Boss monsters once the fight starts
 !?FU(OnBeforeBattle)&i^wog_isNeutralBattle^/(ERM_FLAG_IS_HUMAN)/i^Raid_Boss_Mod_Active^=1;

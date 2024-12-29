@@ -11,7 +11,7 @@ Check readme for mod description.
 !?FU(OnGameEnter)&i^Raid_Boss_Mod_Active^=1;
 
 !!SN:W^Monster_Alive_Time^/12;          [The value how long monsters stay alive on the adventure map. Recommended: 10days]
-!!SN:W^Raid_Boss_Spawn_Chance^/14;      [The chance by which monsters spawn on the map. Recommended 10%]
+!!SN:W^Raid_Boss_Spawn_Chance^/10;      [The chance by which monsters spawn on the map. Recommended 10%]
 !!SN:W^Raid_Boss_Spawn_Radius^/20;      [The radius around towns that is possible to spawn a monster. Recommended 20 x and y radius depending on your map]
 !!SN:W^Raid_Boss_Max_Monsters^/10;      [Set the amount of wandering monsters that can be active at the same time, recommended around 10]
 !!SN:W^Raid_Boss_Spawn_Cooldown^/5;     [Set number in days in which a monster cannot spawn after one was spawned. Recommended 7 days]
@@ -36,13 +36,15 @@ When clicking on System Icon at Adventure Map run options again
 !!SN:T^raid_monster.diff_header^/?z1;   [set text in header]
 !!SN:T^raid_monster.diff_level1^/?z2; 
 !!SN:T^raid_monster.diff_level2^/?z3; 
-!!SN:T^raid_monster.diff_level3^/?z4; 
+!!SN:T^raid_monster.diff_level3^/?z4;
+!!SN:T^raid_monster.diff_level4^/?z5; 
 
-!!IF:G1/3/1/1/2/3/4/0/0/0/0/0/0/0/0/;   [Show Choice Dialouge]
+!!IF:G1/3/2/1/2/3/4/5/0/0/0/0/0/0/0/;   [Show Choice Dialouge]
 
-!!SN&v3=1:W^Raid_Boss_Difficulty^/1;    [Normal]
-!!SN&v3=2:W^Raid_Boss_Difficulty^/2;    [Hard]
-!!SN&v3=4:W^Raid_Boss_Difficulty^/3;    [Extreme]
+!!SN&v3=1:W^Raid_Boss_Difficulty^/1;    [Easy]
+!!SN&v3=2:W^Raid_Boss_Difficulty^/2;    [Normal standart and initial value]
+!!SN&v3=4:W^Raid_Boss_Difficulty^/3;    [Hard]
+!!SN&v3=5:W^Raid_Boss_Difficulty^/4;    [Extreme]
 
 
 ****************************************************************************************************
@@ -106,7 +108,7 @@ x1=returns monster from pool to spawn
 
 !!FU(WOG_GetRandomMonster):P?x1/4/6/(INT_MAX); [Get random WoG monster]
 !!VRy1:S0R10;                           [make random number]
-!!VRx1&y1>5:S183R8;                     [Choose random defender commander with 50% chance]
+!!VRx1&y1>8:S183R8;                     [Choose random defender commander with 20% chance]
 
 
 *Loops all towns on the map and spawns a wandering monster that will attack the nearest town
@@ -456,17 +458,17 @@ x1=Enchtmant Number, x2=Index of Z-Var
 !!VRy6:Sc+6:7;                          [Set weeks]
 !!VRy7:Sx2*200;                         [Hero level mal 200]
 !!VRy8:Sc+6:7*100;                      [Week mal 100]
-!!VRy9:Sx2*4;                           [Hero level mal 4 for Damage]
+!!VRy9:Sx2*5;                           [Hero level mal 5 for Damage]
 
 **Calculate the Strength of Raid Boss**
 !!VRy10:Sx3*2+y6;                       [Attack=Attack from Hero *2 + Gameweeks]
 !!VRy11:Sx4*2+y6;                       [Defense=Defense from Hero *2 + Gameweeks]
-!!VRy12:Sx2:10 +2R2;                    [Speed=Herolvl/10 +2-4]
+!!VRy12:Sx2:10 +1R1;                    [Speed=Herolvl/10 +1-2]
 !!SN:W^Typhon_Third_Upgrade_Mod_Active^/?y99; [With TUM battle commander is slightly stronger]
 !!VRy13&y99=0:Sx1:6 +y7 +y8 +50 :2;     [Health=Fight Value/5 +Herlolvl*200 +Week*100 durch 2]
 !!VRy13&y99=1:Sx1:5 +y7 +y8 +50 :2;     [Health=Fight Value/4 +Herlolvl*200 +Week*100 durch 2]
-!!VRy14:Sx1:250 +y9 +5R20;              [Min Damage HP_Value +Hero Level*10]
-!!VRy15:Sx1:150 +y9 +31R45;             [Max Damage]
+!!VRy14:Sx1:275 +y9 +5R20;              [Min Damage HP_Value +Hero Level*10]
+!!VRy15:Sx1:200 +y9 +31R45;             [Max Damage]
 !!VRy13|y13<=0/y13>5000000:S5000000;    [prevent overflow - Note that the upper limit for commander HP is far less than INT_MAX! It overflows when bigger than 30000000]
 !!VRy12&y13>=500000:+1; !!VRy12&y13>=1000000:+1; !!VRy12&y13>=5000000:+1; [Add additional speed for very high monster HP]
 
@@ -498,13 +500,13 @@ x1=Enchtmant Number, x2=Index of Z-Var
 *Fast
 !!if|y1=1/y2=1;                         [if at least one echantment is active]
   !!if&y1=1/y2=0;
-    !!VRy12:+3;                         [+3 Speed]
+    !!VRy12:+2;                         [+2 Speed]
   !!en;
   !!if&y2=1/y1=0;
-    !!VRy12:+4;                         [+4 Speed]
+    !!VRy12:+3;                         [+3 Speed]
   !!en;
   !!if&y2=1/y1=1;
-    !!VRy12:+7;
+    !!VRy12:+4;                         [+4 Speed]
   !!en;
 !!en;
 
@@ -579,7 +581,57 @@ x1=Enchtmant Number, x2=Index of Z-Var
 !!en;
 
 !!VRy19:S0;                             [Set number of shots to 0]
+*!VRy12:S23; Test
 
+*Set stats from difficulty
+!!SN:W^Raid_Boss_Difficulty^/?y1;
+!!if&y1=1;                              [Easy 75%]
+  !!VRy13:*75:100;                      [Health]
+  !!VRy10:*75:100; !!VRy11:*75:100;     [Att Def]
+  !!VRy14:*75:100; !!VRy15:*75:100;     [Min Max Dmg]
+!!en;
+!!if&y1=2;                              [Normal 100%]
+  !!VRy13:*100:100;                     [Health]
+  !!VRy10:*100:100; !!VRy11:*100:100;   [Att Def]
+  !!VRy14:*100:100; !!VRy15:*100:100;   [Min Max Dmg]
+!!en;
+!!if&y1=3;                              [Hard 150%]
+  !!VRy13:*3:2;                         [Health]
+  !!VRy10:*3:2; !!VRy11:*3:2;           [Att Def]
+  !!VRy14:*3:2; !!VRy15:*3:2;           [Min Max Dmg]
+!!en;
+!!if&y1=4;                              [Extreme 200%]
+  !!VRy13:*2;                           [Health]
+  !!VRy10:*2; !!VRy11:*2;               [Att Def]
+  !!VRy14:*2; !!VRy15:*2;               [Min Max Dmg]
+!!en;
+
+*Set minimum stats
+!!VRy13&y13<750:S750;                   [Min HP is 750]
+!!VRy10&y10<20:S20; !!VRy11&y11<20:S20; [Attack and Defense min 20]
+!!VRy14&y14<50:S50; !!VRy15&y15<125:S125;[Min and Max damage is 50-125]
+!!VRy12&y12<4:S4;                       [Min 4 speed]
+!!VRy12&y12>9:S9;                       [Max 8 speed]
+
+*Elite and Champion stat increase
+!!SN:W^Raid_Boss_Ench_Roll_%X5_4^/?y1;  [Check if Raid Boss has Elite Enchantment]
+*!VRy1:S1; Test
+!!if&y1>0;                              [If Elite +25% Stats]
+  !!VRy13:*5:4;                         [Health]
+  !!VRy10:*5:4; !!VRy11:*5:4;           [Att Def]
+  !!VRy14:*5:4; !!VRy15:*5:4;           [Min Max Dmg]
+!!en;
+
+!!SN:W^Raid_Boss_Ench_Roll_%X5_5^/?y1;  [Check if Raid Boss has Champion Enchantment]
+*!VRy1:S1; Test
+!!if&y1>0;                              [If Champion +25% Stats]
+  !!VRy13:*5:4;                         [Health]
+  !!VRy10:*5:4; !!VRy11:*5:4;           [Att Def]
+  !!VRy14:*5:4; !!VRy15:*5:4;           [Min Max Dmg]
+!!en;
+
+
+*Set Stats of Pack and Horde creatures
 !!if&x16>21;                            [Any creature above unit 21 has reduced stats. Usually that is needed in case of Pack/Horde enchantment]
   !!VRy13::3;                
   !!VRy10::3; !!VRy11::3; 
@@ -588,39 +640,8 @@ x1=Enchtmant Number, x2=Index of Z-Var
   !!VRy19:S1;                           [Set number of shots to 1 for Pack and Horde]
 !!en;
 
-!!VRy13&y13<1000:S1000;                 [Min HP is 1000]
-!!VRy10&y10<20:S20; !!VRy11&y11<20:S20; [Attack and Defense min 20]
-!!VRy14&y14<50:S50; !!VRy15&y15<125:S125;[Min and Max damage is 50-125]
-!!VRy12&y12<4:S4;                       [Min 4 speed]
 
-*!VRy12:S23; Test
-
-!!SN:W^Raid_Boss_Difficulty^/?y1;
-!!if&y1=2;                              [Hard]
-  !!VRy13:*3:2;                         [Health]
-  !!VRy10:*3:2; !!VRy11:*3:2;           [Att Def]
-  !!VRy14:*3:2; !!VRy15:*3:2;           [Min Max Dmg]
-!!en;
-!!if&y1=3;                              [Extreme]
-  !!VRy13:*2;                           [Health]
-  !!VRy10:*2; !!VRy11:*2;               [Att Def]
-  !!VRy14:*2; !!VRy15:*2;               [Min Max Dmg]
-!!en;
-
-!!SN:W^Raid_Boss_Ench_Roll_%X5_4^/?y1;  [Check if Raid Boss has Elite Enchantment]
-!!if&y1>0;                              [If Elite +25% Stats]
-  !!VRy13:*5:4;                         [Health]
-  !!VRy10:*5:4; !!VRy11:*5:4;           [Att Def]
-  !!VRy14:*5:4; !!VRy15:*5:4;           [Min Max Dmg]
-!!en;
-
-!!SN:W^Raid_Boss_Ench_Roll_%X5_5^/?y1;  [Check if Raid Boss has Champion Enchantment]
-!!if&y1>0;                              [If Champion +25% Stats]
-  !!VRy13:*5:4;                         [Health]
-  !!VRy10:*5:4; !!VRy11:*5:4;           [Att Def]
-  !!VRy14:*5:4; !!VRy15:*5:4;           [Min Max Dmg]
-!!en;
-
+*Set Stacks stats
 !!BMx16:Hy13 Ay10 Dy11 Sy12 U1/y14 U2/y15 U3/y19 E0; [Give Stats and Set casts and shots to zero]
 
 
@@ -685,7 +706,7 @@ x1=Enchtmant Number, x2=Index of Z-Var
     !!if&x2>=21/x2<=41;                 [if any valid battlestack]
       !!VRx4&y1=1/y2=0:*70:100;         [30% damage reduction]
       !!VRx4&y1=0/y2=1:*40:100;         [60% damage reduction]
-      !!VRx4&y1=1/y2=1:*10:100;         [90% damage reduction]
+      !!VRx4&y1=1/y2=1:*20:100;         [80% damage reduction]
     !!en;
   !!en;
 !!en; 
@@ -839,14 +860,14 @@ x1=Enchtmant Number, x2=Index of Z-Var
       !!VRy20:S0R99;                    [Generate Random number]
       !!VRy22:S0;                       [set to zero]
       !!VRy22&y1=1:S25;                 [Set the chance to dodge to +25%]
-      !!VRy22&y2=1:S50;                 [Set the chance to dodge to +50%]
-      !!VRy22&y1=1/y2=1:S75;            [Set the chance to dodge to +75%]
+      !!VRy22&y2=1:S40;                 [Set the chance to dodge to +40%]
+      !!VRy22&y1=1/y2=1:S65;            [Set the chance to dodge to +65%]
       !!if&y20<=y22;                    [chance is ]
         !!VRz-1:S^AIRSHELD^;
         !!SN&i^battle_isVisible^:Pz-1;
         !!MF:E0;                        [set damage to zero]
         !!MF:F0;                        [set final damage to zero]
-        !!SN:T^AC_Misc.Air Dodge^/?z-1;
+        !!SN:T^raid_monster.Air Dodge^/?z-1;
         !!BU&i^battle_isVisible^:Mz-1;  [show message in log]
       !!en;
     !!en;
@@ -896,7 +917,7 @@ x1=Enchtmant Number, x2=Index of Z-Var
 !!en;
 
 
-*Raid Boss has a chance to deal tripple damage against single untis.
+*Raid Boss has a chance to deal double damage against single untis.
 This is done to reduce the chance of strong single units tanking the monster because of heal.
 !?FU(OnStackToStackDamage)&i^Is_Raid_Boss_Fight^;
 !!FU&x9=1:E;                            [Exit calculation for theoretical attack]
@@ -905,7 +926,7 @@ This is done to reduce the chance of strong single units tanking the monster bec
   !!if&x2>=0/x2<=20;                    [if any valid battlestack]
     !!BMx2:N?y2;                        [get number of units]
     !!VRy1:S0R1;                        [make a coin flip]
-    !!VRx4&y1=1/y2=1:*3;                [with 50% chance to tripple damage]
+    !!VRx4&y1=1/y2=1:*2;                [with 50% chance to double damage]
   !!en;
 !!en;
 
@@ -1380,9 +1401,9 @@ Code to set description for commanders. Requires complex code to override window
 **Resources Reward
 !!if&y50=0|y50=1;                       [Double Chance]
   !!VRy8:Sy7;                           [Set Level to y8]
-  !!VRy8::5 +1;                         [some forumla]
+  !!VRy8::3 +3;                         [some forumla]
   !!VRy10:S0R6;                         [generate random resource]
-  !!VRy11&y10<6:S1R3 +y8;               [set value for res]
+  !!VRy11&y10<6:S1R5 +y8;               [set value for res]
   !!VRy11&y10=6:Sy8*750+1000R1500;      [set value for gold]
   !!VRy11&y10=6/y11<5000:S5000;         [Give at least 5k gold]
   !!OW:Rx2/y10/dy11;                    [Give Player Resources]
@@ -1441,7 +1462,7 @@ Code to set description for commanders. Requires complex code to override window
   !!en;
 !!en;
 
-**Stats Reward
+**ACM Stats Reward
 !!if|y50=8/y50=9;                       [18=  Give ACM Reward]
   !!VRy31:S1R5;                         [currently there are 6 special rewards]
   !!VRz5&y31=1:S^2 Magic Strength^;
