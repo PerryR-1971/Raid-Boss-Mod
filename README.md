@@ -1,4 +1,4 @@
-## Raid Boss Mod 1.0
+## Raid Boss Mod 1.1
 
 - Each day theres a Chance a monster spawns near a humans players towns. 
 - This wandering monster or "raid boss" will walk towards your town if you dont kill it before.
