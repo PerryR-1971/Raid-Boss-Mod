@@ -27,9 +27,10 @@
 		"reward_message6": 					"{~r}A glorius victory{~}\n\nDefeating the Raid Boss %Z-10 is rewared with:\n\n+{~orange}%Z5{~}",
 		
 		"diff_header": 						"Select Raid Boss Difficulty\nRight-click system options to call settings again",
-		"diff_level1": 						"Normal - moderate stats scaling. Medium reward chance.",
-		"diff_level2": 						"Hard - 150% stats scaling. High reward chance.",
-		"diff_level3": 						"Extreme - 200% stats scaling. Very high reward chance, multiple rewards.",
+		"diff_level1": 						"Easy - 75% stats scaling. Low reward chance.",
+		"diff_level2": 						"Normal - 100% stats scaling. Normal reward chance.",
+		"diff_level3": 						"Hard - 150% stats scaling. High reward chance, multiple rewards.",
+		"diff_level4": 						"Extreme - 200% stats scaling. Very high reward chance, multiple rewards.",		
 		
 		"Enchantment_1":					"Strong",
 		"Enchantment_2":					"Extra Strong",
@@ -69,6 +70,9 @@
 		"Water":							"{~blue}Water{~}",
 		"Earth":							"{~green}Earth{~}",
 		"Fire":								"{~red}Fire{~}",
+		
+		"Air Dodge": 						"{You dodge the damage.}"	
+		
 		
 	},
 
