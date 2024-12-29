@@ -14,6 +14,8 @@
 - increased reward with low hero levels
 - several changes in stats scaling, like damage and speed
 - reduced minimum health to 750HP
+- disabled Week of Monstes spawns WM, now it spawns stationary insteady
+- disabled Freelancer Guild option
 
 2024-11-02 Release (1.0) by *PerryR*
 
@@ -46,6 +48,7 @@ The level of the Raid Boss is based on its HP.
 Each Raid Boss has an vulnerabilty to a certain magic school, these spell will deal double damage then.
 
 -----------------------------------------------------------------------------------------------------------------------
+Note: Since the script works with wandering monster receiver from wog, I disabled Freelancer Guild and spawn wandering monster at week start for compatibility reasons.
 
 How to change settings:
 currently the spawn chance of the monsters is set to 15% and it increases by +1% for each game day until it resets with an event. If you just interested in testing you can increase the chance by editing the erm file inside the mod folder. The following settings can be changed:
