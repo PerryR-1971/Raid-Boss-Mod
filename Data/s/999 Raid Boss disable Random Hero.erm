@@ -5,6 +5,13 @@ ZVSE2
 !?FU(OnGameEnter)&i^Raid_Boss_Mod_Active^=1;
 !!UN:P21/0;                             [disable Freelancer's Guild Script]
 
+!!UN:P135/?y1;                          [Check if Wandering Monsters map option is enabled]
+!!if&y1=1;                              [if WM is enabled disable it and switch to stationary instead]
+  !!UN:P136/1;                          [enable stationary option]
+  !!UN:P135/0;                          [disable WM option]
+!!en;
+
+
 !?FU(OnEveryDay)&i^Raid_Boss_Mod_Active^=1;
 !!UN:P21/0;                             [disable Freelancer's Guild Script]
 
