@@ -9,6 +9,12 @@
 
 -----------------------------------------------------------------------------------------------------------------------
 ## LATEST CHANGELOG
+2024-12-29 Release (1.1) by *PerryR*
+- added Easy difficulty (75% stats scaling)
+- increased reward with low hero levels
+- several changes in stats scaling, like damage and speed
+- reduced minimum health to 750HP
+
 2024-11-02 Release (1.0) by *PerryR*
 
 -----------------------------------------------------------------------------------------------------------------------
