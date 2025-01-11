@@ -9,6 +9,9 @@
 
 -----------------------------------------------------------------------------------------------------------------------
 ## LATEST CHANGELOG
+2025-01-1 Release (1.11) by *PerryR*
+- fixed possible ERM error when using Random Hero script
+
 2024-12-29 Release (1.1) by *PerryR*
 - added Easy difficulty (75% stats scaling)
 - increased reward with low hero levels
