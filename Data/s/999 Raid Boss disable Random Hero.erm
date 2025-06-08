@@ -16,9 +16,7 @@ ZVSE2
 !!UN:P21/0;                             [disable Freelancer's Guild Script]
 
 
-Function to set up battle stats of Raid Boss monsters once the fight starts
 !?FU(OnBeforeBattle)&i^wog_isNeutralBattle^/(ERM_FLAG_IS_HUMAN)/i^Raid_Boss_Mod_Active^=1;
-
 !!SN:W^Raid_Boss_Random_Hero^/0;
 !!SN:W^Raid_Boss_Karmic_Battle^/0;
 !!SN:W^Raid_Boss_Mod_Active^/?y2;

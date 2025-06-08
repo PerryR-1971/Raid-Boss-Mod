@@ -1,5 +1,5 @@
 ZVSE2
-*Raid Boss Mod v1.0
+*Raid Boss Mod v1.1
 by Perry created 2024
 
 Check readme for mod description.
@@ -14,9 +14,9 @@ Check readme for mod description.
 !!SN:W^Raid_Boss_Spawn_Chance^/10;      [The chance by which monsters spawn on the map. Recommended 10%]
 !!SN:W^Raid_Boss_Spawn_Radius^/20;      [The radius around towns that is possible to spawn a monster. Recommended 20 x and y radius depending on your map]
 !!SN:W^Raid_Boss_Max_Monsters^/10;      [Set the amount of wandering monsters that can be active at the same time, recommended around 10]
-!!SN:W^Raid_Boss_Spawn_Cooldown^/5;     [Set number in days in which a monster cannot spawn after one was spawned. Recommended 7 days]
+!!SN:W^Raid_Boss_Spawn_Cooldown^/7;     [Set number in days in which a monster cannot spawn after one was spawned. Recommended 7 days]
 !!SN:W^Raid_Boss_special_chance_base^/1;[set chance for special events. Recommended 1%]
-!!SN:W^Raid_Boss_start_delay^/21;       [set the number in days which the monster does not spawn from the beginning of the game. Recommended 28 days]
+!!SN:W^Raid_Boss_start_delay^/28;       [set the number in days which the monster does not spawn from the beginning of the game. Recommended 28 days]
 
 
 ****************************************************************************************************
@@ -130,7 +130,7 @@ x1-x3 town coordinates, x4=monster ID, x5=player color
   !!VRy17:S1Ry50+y16;                   [generate y-coordinate with y plus/minus 10 in both directions]
   !!VRy17&y17<0:S0; !!VRy17&y17>y30:Sy30;[coordinates cannot be bigger than map size]
 
-  !!UN:Ey12/y17/x3;                     [check if the random coordinate is free to place a monster]
+  !!UN:Ey12/y17/x3;                     [check if the random coordinate is free to place a monster]  
   !!if&-1;                              [if it is free and the coordinates are within valid range]
     !!MW:Py12/y17/x3/x4/?y10;           [spawn random monster at positon x/y/z and get WM unique number in variable]
     !!SN:W^Raid_Boss_Monster_%Y10^/y99; [Set spawn day of wandering monster number]
@@ -164,29 +164,28 @@ x1-x3 town coordinates, x4=monster ID, x5=player color
   !!UN:U98/-1/i/2;                      [Get Coordinates of Town based on town number]
   !!OBv2/v3/v4:U?y4;                    [Get Subtype]
   !!CAv2/v3/v4:O?y6;                    [Get town owner]
-  *!IF:M^%V2 %V3 %V4 and y6 is %Y6 and town type is %Y4  and i is%I^;
   !!OW:Iy6/?y7;                         [Check if human owner/town]
   !!if&y7=0/y6=x1;                      [if its a town from human and the currents player end turn]
     !!VRv2:-1;                          [Checks right in front of town]
     !!VRv3:+1;                          [Checks right in front of town]
-    !!MW:Cv2/v3/v4/?y10; !!OBv2/v3/v4:T?y30; [Get Type ID]
+    !!MW:Cv2/v3/v4/?y10; !!OBv2/v3/v4&y10>0:T?y30; [Get Type ID]    
     !!UN&y10>0/y30=54:Ov2/v3/v4;        [delete if monster]
     !!SN&y10>0/y30=54:W^Raid_Boss_Monster_%Y10^/0; [reset timer if monster was deleted]
     !!FU(Raid_Boss_Enchantments)&y10>0/y30=54:Py10/0; [input WM number and delete previous set enchantments if monster was killed or deleted]
 
     !!VRv2:+1;                          [Checks in front of town]
-    !!MW:Cv2/v3/v4/?y11; !!OBv2/v3/v4:T?y30; [Get Type ID]
+    !!MW:Cv2/v3/v4/?y11; !!OBv2/v3/v4&y11>0:T?y30; [Get Type ID]    
     !!UN&y11>0/y30=54:Ov2/v3/v4;        [delete if monster]
     !!SN&y11>0/y30=54:W^Raid_Boss_Monster_%Y11^/0; [reset timer if monster was deleted]
     !!FU(Raid_Boss_Enchantments)&y11>0/y30=54:Py11/0; [input WM number and delete previous set enchantments if monster was killed or deleted]
 
     !!VRv2:+1;                          [Checks left in front of town]
-    !!MW:Cv2/v3/v4/?y12; !!OBv2/v3/v4:T?y30; [Get Type ID]
+    !!MW:Cv2/v3/v4/?y12; !!OBv2/v3/v4&y12>0:T?y30; [Get Type ID]    
     !!UN&y12>0/y30=54:Ov2/v3/v4;        [delete if monster]
     !!SN&y12>0/y30=54:W^Raid_Boss_Monster_%Y12^/0; [reset timer if monster was deleted]
     !!FU(Raid_Boss_Enchantments)&y12>0/y30=54:Py12/0; [input WM number and delete previous set enchantments if monster was killed or deleted]
 
-    !!if&y30=54;
+    !!if&y30=54;    
     !!if|y10>0/y11>0/y12>0;             [if there is any monster in front of the town show message to player]
       !!SN&x1=0:T^raid_monster.red^/?z5; !!SN&x1=1:T^raid_monster.blue^/?z5; !!SN&x1=2:T^raid_monster.tan^/?z5; !!SN&x1=3:T^raid_monster.green^/?z5;
       !!SN&x1=4:T^raid_monster.orange^/?z5; !!SN&x1=5:T^raid_monster.purple^/?z5; !!SN&x1=6:T^raid_monster.teal^/?z5; !!SN&x1=7:T^raid_monster.pink^/?z5;
@@ -1393,7 +1392,7 @@ Code to set description for commanders. Requires complex code to override window
 
 !!HEx1:B0/?z-10;                        [get hero name]
 !!HEx1:E?y6/?y7/1;                      [get level of this hero]
-!!VRy7:+10;                             [Add more level to give bigger rewards]
+!!VRy7:+12;                             [Add more level to give bigger rewards]
 !!SN:W^Advanced_Classes_Mod_Active^/?y1;[Set Mod as active]
 !!VRy50&y1=1:S0R9;                      [generate random number]
 !!VRy50&y1=0:S0R7;                      [generate random number without ACM specific rewards]
@@ -1449,7 +1448,7 @@ Code to set description for commanders. Requires complex code to override window
 !!if&y50=7;                             [16=  Teach Spell]
   !!HEx1:A2/0/d/?y15;                   [Check for Spell Book]
   !!FU&y15=0:E;                         [Exit if no Spell Book]
-  !!FU(ACM_GenerateRandomSpell):P1/4/x1/?y-99; [Function to generate a random level 1-4 spell which skips banned spells]
+  !!FU(Raid_Boss_GenerateRandomSpell):P1/4/x1/?y-99; [Function to generate a random level 1-4 spell which skips banned spells]
   !!if&y-99>=0/y-99<=69;                [Valid Spell]
     !!HEx1:S7/?y14;                     [7 Wisdom]
     !!SSy-99:L?y5;                      [Spell Level]
@@ -1459,7 +1458,8 @@ Code to set description for commanders. Requires complex code to override window
     !!SN:T^raid_monster.reward_message5^/?z2 Iz2/?z2;
     !!IF&1000/999:Q2/9/y-99/1/z2;
     !!HEx1:My-99/1;                     [Give Spell]
-  !!en;
+  !!en;  
+  !!VRy50&y-99=-1:S20;                  [so to extra chance when all spells learned]
 !!en;
 
 **ACM Stats Reward
@@ -1481,17 +1481,51 @@ Code to set description for commanders. Requires complex code to override window
   !!IF&1000/999:Q2/11/3/1/^%Z2^;
 !!en;
 
+**Extra Primary Skill Reward if no Spell can be learned
+!!if&y50=20;                            
+  !!VRy5:S31R3;                         [random value for prim stats]
+  !!SN:T^raid_monster.reward_message2^/?z2 Iz2/?z2;
+  !!IF:Q1/y5/1/1/z2;                    [show dialouge]
+  !!HEx1&y5=31:Fd1/d/d/d;               [give appropriate bonus]
+  !!HEx1&y5=32:Fd/d1/d/d;               [give appropriate bonus]
+  !!HEx1&y5=33:Fd/d/d1/d;               [give appropriate bonus]
+  !!HEx1&y5=34:Fd/d/d/d1;               [give appropriate bonus]
+!!en;
+
 !!UN:R2;                                [Redraw]
+
+
+*** Generate Random Spell Number by Archer30 ***
+!?FU(Raid_Boss_GenerateRandomSpell);
+!#VA(minLevel:x) (maxLevel:x) (hero:x) (spell:x);
+
+!!VR(spell):S(NO_SPELL);
+!!FU(NewIntArray):P?(spellList:y);
+!!re i/(SPELL_FIRST)/(SPELL_LAST_WOG);
+  !!HE(hero):M=i/1;
+  !!if&-1;
+    !!SSi:L?(level:y);
+    !!if&(level)>=(minLevel)/(level)<=(maxLevel);
+      !!UN:J0/i/?(isDisabled:y);
+      !!FU(Array_Push)&(isDisabled)<>(TRUE):P(spellList)/i;
+    !!en;
+  !!en;
+!!en;
+!!SN:M(spellList)/?(size:y);
+!!if&(size)>0;
+  !!VR(random:y):R0/1/(size) -1;
+  !!SN:M(spellList)/(random)/?(spell);
+!!en;
 
 
 *************************************************************************************
 *Restore Random Hero script variable and Karmic Battle variable
-!?FU(OnAfterBattleUniversal)&i^wog_isNeutralBattle^/(ERM_FLAG_IS_HUMAN)/i^Raid_Boss_Mod_Active^=1;
+!?FU(OnAfterBattleUniversal)&i^Raid_Boss_Mod_Active^=1;
 !!SN:W^Raid_Boss_Random_Hero^/?y1;
 !!SN:W^Raid_Boss_Mod_Active^/?y2;
 
 !!UN&y1=1/y2=1:P72/1;                   [activate random hero option again]
-!!VRi^wog_72_randHeroActive^&y1=1/y2=1:S(TRUE);
+*!VRi^wog_72_randHeroActive^&y1=1/y2=1:S(TRUE); Seems it musnt necessary be enabled again, should prevent bug
 
 !!SN:W^Raid_Boss_Karmic_Battle^/?y1;
 !!UN&y1=1/y2=1:P38/1;                   [activate karmic battle option again]
