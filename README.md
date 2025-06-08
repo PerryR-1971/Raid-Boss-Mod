@@ -1,4 +1,4 @@
-## Raid Boss Mod 1.1
+## Raid Boss Mod 1.2
 
 - Each day theres a Chance a monster spawns near a humans players towns. 
 - This wandering monster or "raid boss" will walk towards your town if you dont kill it before.
@@ -8,9 +8,12 @@
 - There is an Elite and Champion version of the Raid Boss, which will be even more dangerous. These version have a small chance to spawn.* 
 
 -----------------------------------------------------------------------------------------------------------------------
+-
 ## LATEST CHANGELOG
-2025-01-11 Release (1.11) by *PerryR*
-- fixed possible ERM error when using Random Hero script
+2025-06-08 Release (1.2) by *PerryR*
+- fixed rewards when the mod was played without ACM, this should increase the rewards feeling
+- fixed potenial erm error with random hero option
+- fixed Raid Boss sometimes not stealing money from the towns
 
 2024-12-29 Release (1.1) by *PerryR*
 - added Easy difficulty (75% stats scaling)
@@ -51,7 +54,6 @@ The level of the Raid Boss is based on its HP.
 Each Raid Boss has an vulnerabilty to a certain magic school, these spell will deal double damage then.
 
 -----------------------------------------------------------------------------------------------------------------------
-Note: Since the script works with wandering monster receiver from wog, I disabled Freelancer Guild and spawn wandering monster at week start for compatibility reasons.
 
 How to change settings:
 currently the spawn chance of the monsters is set to 15% and it increases by +1% for each game day until it resets with an event. If you just interested in testing you can increase the chance by editing the erm file inside the mod folder. The following settings can be changed:
