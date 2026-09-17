@@ -1,0 +1,381 @@
+ZVSE2
+; Author:   Perry R
+; Requires: ERA 3.3+, Era Erm Framework
+; Config DL for Raid Boss mod
+
+; Public defaults: Lang/configuration.json may override these values.
+; Saved values from Runtime/raid boss.ini take final precedence for dialogue options.
+!#VRi^Raid_Boss_Monster_Alive_Time^:S12;
+!#VRi^Raid_Boss_Spawn_Chance^:S12;
+!#VRi^Raid_Boss_Spawn_Radius^:S20;
+!#VRi^Raid_Boss_Max_Monsters^:S10;
+!#VRi^Raid_Boss_Spawn_Cooldown^:S5;
+!#VRi^Raid_Boss_special_chance_base^:S1;
+!#VRi^Raid_Boss_start_delay^:S22;
+!#VRi^Raid_Boss_Difficulty^:S3;
+!#VRi^RaidBoss_ACM_rewards^:S(FALSE);
+!#VRi^RaidBoss_No_steal^:S(FALSE);
+!#VRi^RaidBoss_More_gold^:S(FALSE);
+!#VRi^RaidBoss_Config_Loaded^:S(FALSE);
+
+!?FU(RaidBoss_LoadJsonDefaults);
+!!FU(LoadIntGlobalsFromJson):P^raid_boss.settings.^/^RaidBoss_^/^Config_Loaded^;
+!!FU(LoadIntGlobalsFromJson)&i^RaidBoss_Config_Loaded^:P^raid_boss.settings.^/^Raid_Boss_^/
+  ^Monster_Alive_Time^/^Spawn_Chance^/^Spawn_Radius^/^Max_Monsters^/
+  ^Spawn_Cooldown^/^special_chance_base^/^start_delay^/^Difficulty^;
+!!FU(LoadIntGlobalsFromJson)&i^RaidBoss_Config_Loaded^:P^raid_boss.settings.^/^RaidBoss_^/
+  ^ACM_rewards^/^No_steal^/^More_gold^;
+
+!#FU(RaidBoss_LoadJsonDefaults):P;
+
+
+*?FU(OnCustomDialogEvent)&i^dlg_id^=44/i^mouse_action^=(MOUSE_LMB_PRESSED); [checkboxes switch between check and cancel for Enhanced Henchmen]
+*!if|i^mouse_item^=74/i^mouse_item^=82;
+  *!SN:P^Button.wav^;
+  *!FU(Configure_RaidBoss_mod)&i^Raid_Boss_Mod_Active^:P;
+*!en;
+
+!?FU(Configure_RaidBoss_mod);           [open the Neutrals difficulty settings and set all names of options]
+; Set Up the name of Dialogue
+!!DL170:N^Raid_Set.txt^;
+!!DL170:A13/(DLG_CMD_SET_TEXT)/^%T(Raid_Config.RaidBoss_Dlg_Title)^;
+
+; Set up text on items
+!!re i/0/8;
+  !!SN:T^Raid_Config.RaidBoss_Option_%i^/?(text:z);
+  !!if&i<=5;                            [5 - last index of buttons]
+    !!VR(dlgItem:y):Si +50;
+  !!el;
+    !!VR(dlgItem):Si +24;
+  !!en;
+
+  !!DL170:A(dlgItem)/(DLG_CMD_SET_TEXT)/(text);
+!!en;
+
+; Set Up hints
+; Here we use z70 to z77
+!!re i/0/8;
+  !!VR(zIndex:y):Si +70;
+  !!SN:T^Raid_Config.RaidBoss_Option_%i^/?z(zIndex);
+  !!DL170:H(zIndex)/(zIndex);
+!!en;
+
+; Hint for other elements
+!!SN:T^Raid_Config.confirm_button_hint_0^/?z60; !!DL170:H30722/60; [Hint Text for buttons]
+!!SN:T^Raid_Config.cancel_button_hint^/?z61; !!DL170:H30721/61; 
+
+!!SN:T^Raid_Config.RaidBoss_Dlg_Hint1^/?z62; !!DL170:H81/62; [Hint Text for pictures]
+!!SN:T^Raid_Config.RaidBoss_Dlg_Hint2^/?z63; !!DL170:H82/63; 
+!!SN:T^Raid_Config.RaidBoss_Dlg_Hint3^/?z64; !!DL170:H83/64;
+!!SN:T^Raid_Config.RaidBoss_Dlg_Hint4^/?z65; !!DL170:H84/65; 
+!!SN:T^Raid_Config.RaidBoss_Dlg_Hint5^/?z66; !!DL170:H85/66;  
+
+!!FU(RaidBoss_LoadOptionsFromIni):P;    [Try to load options from ini]
+!!FU(RaidBoss_RefreshConfigDlg):P;
+*!FU(RaidBoss_SetUpConfigMons):P;
+
+!!VR(impCadre:y):S(MON_IMP) +2;
+!!VR(hellhoundCadre:y):S(MON_HELL_HOUND) +2;
+!!VR(demonCadre:y):S(MON_HORNED_DEMON) +2;
+!!VR(efreetiCadre:y):S(MON_EFREETI) +2;
+!!VR(hellCadre:y):S(MON_HELL_BARON) +2;
+
+; Set up Perry, Archer and Daemon
+!!DL170:A81/(DLG_CMD_SET_DEF_FRAME)/(impCadre);
+!!DL170:A82/(DLG_CMD_SET_DEF_FRAME)/(hellhoundCadre);
+!!DL170:A83/(DLG_CMD_SET_DEF_FRAME)/(demonCadre);
+!!DL170:A84/(DLG_CMD_SET_DEF_FRAME)/(efreetiCadre);
+!!DL170:A85/(DLG_CMD_SET_DEF_FRAME)/(hellCadre);
+
+!!FU(RaidBoss_reset):P;                 [reset all]
+!!SN:W^Raid_Boss_Difficulty^/?y50;
+!!FU(RaidBoss_set):Py50;
+
+
+; Show complete Dialogue number 170
+!!DL170:S1;
+
+
+!?DL&v998=170/v999>=81/v999<=85/v1000=12;[LMB on the creatures/presets icons]
+!!SN:P^Button.wav^;
+!!VRz60:S^^;                            [reset var]
+
+!!if&v999=81;                           [set text for 1st]
+  !!FU(RaidBoss_reset):P;               [reset all]
+  !!FU(RaidBoss_set):P1;
+  !!SN:W^Raid_Boss_Difficulty^/1;       [set variable to 1]
+!!en;
+
+!!if&v999=82;                           [set text for 2st]
+  !!FU(RaidBoss_reset):P;               [reset all]
+  !!FU(RaidBoss_set):P2;
+  !!SN:W^Raid_Boss_Difficulty^/2;
+!!en;
+
+!!if&v999=83;                           [set text for 3st]
+  !!FU(RaidBoss_reset):P;               [reset all]
+  !!FU(RaidBoss_set):P3;
+  !!SN:W^Raid_Boss_Difficulty^/3;
+!!en;
+
+!!if&v999=84;                           [set text for 3st]
+  !!FU(RaidBoss_reset):P;               [reset all]
+  !!FU(RaidBoss_set):P4;
+  !!SN:W^Raid_Boss_Difficulty^/4;
+!!en;
+
+!!if&v999=85;                           [set text for 3st]
+  !!FU(RaidBoss_reset):P;               [reset all]
+  !!FU(RaidBoss_set):P5;
+  !!SN:W^Raid_Boss_Difficulty^/5;
+!!en;
+
+
+!?FU(RaidBoss_reset);
+!!VRz20:S^^; 
+!!DL170:A20/3/z20/1;                    [set new cadre for Imp and highlight the box]
+!!DL170:A21/3/z20/1;                    [set new cadre for Imp and highlight the box]
+!!DL170:A22/3/z20/1;                    [set new cadre for Imp and highlight the box]
+!!DL170:A23/3/z20/1;                    [set new cadre for Imp and highlight the box]
+!!DL170:A24/3/z20/1;                    [set new cadre for Imp and highlight the box]
+
+
+!?FU(RaidBoss_set);
+!!VRz60:S^^;
+!!if&x1=1;
+  !!VRz21:S^Very Easy^;
+  !!DL170:A20/3/z21/1;                  [set new cadre for Imp and highlight the box]
+  !!VRz60:S^Very Easy - 50% stats scaling. Very low reward chance.^; [set text to variable]
+!!en;
+
+!!if&x1=2;
+  !!VRz21:S^Easy^;
+  !!DL170:A21/3/z21/1;                  [set new cadre for Imp and highlight the box]
+  !!VRz60:S^Easy - 75% stats scaling. Low reward chance.^;
+!!en;
+
+!!if&x1=3;
+  !!VRz21:S^Normal^;
+  !!DL170:A22/3/z21/1;                  [set new cadre for Imp and highlight the box]
+  !!VRz60:S^Normal - 100% stats scaling. Normal reward chance.^;
+!!en;
+
+!!if&x1=4;
+  !!VRz21:S^Hard^;
+  !!DL170:A23/3/z21/1;                  [set new cadre for Imp and highlight the box]
+  !!VRz60:S^Hard - 150% stats scaling. High reward chance, multiple rewards.^;
+ !!en;
+
+!!if&x1=5;
+  !!VRz21:S^Extreme^;
+  !!DL170:A24/3/z21/1;                  [set new cadre for Imp and highlight the box]
+  !!VRz60:S^Extreme - 200% stats scaling. Very high reward chance, multiple rewards.^;
+!!en;
+
+!!DL170:A60/3/z60/1;                    [set text to text field]
+
+
+!?FU(RaidBoss_RefreshConfigDlg);
+!!FU(DecorateInt):Pi^Raid_Boss_Monster_Alive_Time^/?(staticStr:z) Pi^Raid_Boss_Spawn_Chance^/?(randomStr:z) Pi^Raid_Boss_Spawn_Radius^/?(coefStr:z)
+  Pi^Raid_Boss_Spawn_Cooldown^/?(heroLvStr:z) Pi^Raid_Boss_start_delay^/?(dailyStr:z) Pi^Raid_Boss_special_chance_base^/?(aiPctStr:z);
+
+!!DL170:A70/(DLG_CMD_SET_TEXT)/^%(staticStr)^;
+!!DL170:A71/(DLG_CMD_SET_TEXT)/^%(randomStr)%^;
+!!DL170:A72/(DLG_CMD_SET_TEXT)/^%(coefStr)^;
+!!DL170:A73/(DLG_CMD_SET_TEXT)/^%(heroLvStr)^;
+!!DL170:A74/(DLG_CMD_SET_TEXT)/^%(dailyStr)^;
+!!DL170:A75/(DLG_CMD_SET_TEXT)/^%(aiPctStr)%^;
+
+!!DL170:A10/(DLG_CMD_SET_DEF_FRAME)/i^RaidBoss_ACM_rewards^;
+!!DL170:A11/(DLG_CMD_SET_DEF_FRAME)/i^RaidBoss_No_steal^;
+!!DL170:A12/(DLG_CMD_SET_DEF_FRAME)/i^RaidBoss_More_gold^;
+
+
+!?FU(OnCustomDialogEvent)&i^dlg_id^=170/i^mouse_action^=(MOUSE_LMB_PRESSED); [checkboxes switch between check and cancel]
+!!VR(flag:y):S(FALSE);
+; Left side
+!!if&i^mouse_item^>=70/i^mouse_item^<=75;
+  !!VR(flag):S(TRUE);
+
+  !!if&i^mouse_item^=70;
+    !!VR(exp:y):Si^Raid_Boss_Monster_Alive_Time^;
+  !!el&i^mouse_item^=71;
+    !!VR(exp):Si^Raid_Boss_Spawn_Chance^;
+  !!el&i^mouse_item^=72;
+    !!VR(exp):Si^Raid_Boss_Spawn_Radius^;
+  !!el&i^mouse_item^=73;
+    !!VR(exp):Si^Raid_Boss_Spawn_Cooldown^;
+  !!el&i^mouse_item^=74;
+    !!VR(exp):Si^Raid_Boss_start_delay^;
+  !!el&i^mouse_item^=75;
+    !!VR(exp):Si^Raid_Boss_special_chance_base^;
+  !!en;
+
+  !!VR(index:y):Si^mouse_item^ -70;
+  !!SN:T^Raid_Config.RaidBoss_Option_%(index)_Title^/?z2/^exp^/(exp);
+  !!SN:T^Raid_Config.RaidBoss_Option_%(index)_Legend^/?z3;
+  !!IF:D30/2/3/^^/^^/^^/^^/^^;
+  !!IF:E1/30;
+  !!VRz1:H1;
+
+  !!if&i^mouse_item^=70;
+    !!VRi^Raid_Boss_Monster_Alive_Time^&1/v1>-1:Vz1 F0/100;
+  !!el&i^mouse_item^=71;
+    !!VRi^Raid_Boss_Spawn_Chance^&1/v1>-1:Vz1 F0/100;
+  !!el&i^mouse_item^=72;
+    !!VRi^Raid_Boss_Spawn_Radius^&1/v1>-1:Vz1 F0/100;
+  !!el&i^mouse_item^=73;
+    !!VRi^Raid_Boss_Spawn_Cooldown^&1/v1>-1:Vz1 F0/100;
+  !!el&i^mouse_item^=74;
+    !!VRi^Raid_Boss_start_delay^&1/v1>-1:Vz1 F0/100;
+  !!el&i^mouse_item^=75;
+    !!VRi^Raid_Boss_special_chance_base^&1/v1>-1:Vz1 F0/100;
+  !!en;
+; Right side
+!!el&i^mouse_item^>=10/i^mouse_item^<=12;
+  !!VR(flag):S(TRUE);
+  !!SN:P^button.wav^;
+
+  !!if&i^mouse_item^=10;
+    !!if&i^RaidBoss_ACM_rewards^;
+      !!VRi^RaidBoss_ACM_rewards^:S(FALSE);
+    !!el;
+      !!VRi^RaidBoss_ACM_rewards^:S(TRUE);
+    !!en;
+  !!el&i^mouse_item^=11;
+    !!if&i^RaidBoss_No_steal^;
+      !!VRi^RaidBoss_No_steal^:S(FALSE);
+    !!el;
+      !!VRi^RaidBoss_No_steal^:S(TRUE);
+    !!en;
+  !!el&i^mouse_item^=12;
+    !!if&i^RaidBoss_More_gold^;
+      !!VRi^RaidBoss_More_gold^:S(FALSE);
+    !!el;
+      !!VRi^RaidBoss_More_gold^:S(TRUE);
+    !!en;
+  !!en;
+!!en;
+
+!!FU(RaidBoss_RefreshConfigDlg)&(flag):P;
+
+
+!?FU(OnCustomDialogEvent)&i^dlg_id^=170/i^mouse_action^=(MOUSE_RMB_PRESSED); [Show right click information all options]
+!!if|i^mouse_item^=70/i^mouse_item^=50;
+  !!IF:M0/(MSG_TYPE_POPUP)/^%T(Raid_Config.RaidBoss_Option_0_Info)^;
+!!el|i^mouse_item^=71/i^mouse_item^=51;
+  !!IF:M0/(MSG_TYPE_POPUP)/^%T(Raid_Config.RaidBoss_Option_1_Info)^;
+!!el|i^mouse_item^=72/i^mouse_item^=52;
+  !!IF:M0/(MSG_TYPE_POPUP)/^%T(Raid_Config.RaidBoss_Option_2_Info)^;
+!!el|i^mouse_item^=73/i^mouse_item^=53;
+  !!IF:M0/(MSG_TYPE_POPUP)/^%T(Raid_Config.RaidBoss_Option_3_Info)^;
+!!el|i^mouse_item^=74/i^mouse_item^=54;
+  !!IF:M0/(MSG_TYPE_POPUP)/^%T(Raid_Config.RaidBoss_Option_4_Info)^;
+!!el|i^mouse_item^=75/i^mouse_item^=55;
+  !!IF:M0/(MSG_TYPE_POPUP)/^%T(Raid_Config.RaidBoss_Option_5_Info)^;
+!!el|i^mouse_item^=10/i^mouse_item^=30;
+  !!IF:M0/(MSG_TYPE_POPUP)/^%T(Raid_Config.RaidBoss_Option_6_Info)^;
+!!el|i^mouse_item^=11/i^mouse_item^=31;
+  !!IF:M0/(MSG_TYPE_POPUP)/^%T(Raid_Config.RaidBoss_Option_7_Info)^;
+!!el|i^mouse_item^=12/i^mouse_item^=32;
+  !!IF:M0/(MSG_TYPE_POPUP)/^%T(Raid_Config.RaidBoss_Option_8_Info)^;
+!!en;
+
+
+!?FU(OnCustomDialogEvent)&i^dlg_id^=170/i^mouse_item^=30721/i^mouse_action^=(MOUSE_LMB_RELEASED); [When clicking on the close Button in Neutral Dif Exit and reset all options]
+!!DL:C1;
+!!FU(RaidBoss_LoadOptionsFromIni):P;    [Discard changes and restore the last saved options]
+
+
+!?FU(OnCustomDialogEvent)&i^dlg_id^=170/i^mouse_item^=30722/i^mouse_action^=(MOUSE_LMB_RELEASED); [Close Dialogue with Confirm Button Save all Settings]
+!!DL:C1;
+!!FU(RaidBoss_SaveOptionsToIni):P;      [Try to load options from ini]
+
+
+
+!?FU(RaidBoss_LoadOptionsFromIni);
+!!VR(filePath:z):S^Runtime/raid boss.ini^;
+
+!!FU(ReadIniInts):P(filePath)/^RaidBoss^/
+  ^Raid_Boss_Monster_Alive_Time^/?i^Raid_Boss_Monster_Alive_Time^/i^Raid_Boss_Monster_Alive_Time^/
+  ^Raid_Boss_Spawn_Chance^/?i^Raid_Boss_Spawn_Chance^/i^Raid_Boss_Spawn_Chance^/
+  ^Raid_Boss_Spawn_Radius^/?i^Raid_Boss_Spawn_Radius^/i^Raid_Boss_Spawn_Radius^/
+  ^Raid_Boss_Spawn_Cooldown^/?i^Raid_Boss_Spawn_Cooldown^/i^Raid_Boss_Spawn_Cooldown^;
+
+!!FU(ReadIniInts):P(filePath)/^RaidBoss^/
+  ^Raid_Boss_special_chance_base^/?i^Raid_Boss_special_chance_base^/i^Raid_Boss_special_chance_base^/
+  ^Raid_Boss_start_delay^/?i^Raid_Boss_start_delay^/i^Raid_Boss_start_delay^/
+  ^RaidBoss_ACM_rewards^/?i^RaidBoss_ACM_rewards^/i^RaidBoss_ACM_rewards^/
+  ^RaidBoss_No_steal^/?i^RaidBoss_No_steal^/i^RaidBoss_No_steal^;
+
+ !!FU(ReadIniInts):P(filePath)/^RaidBoss^/ 
+  ^RaidBoss_More_gold^/?i^RaidBoss_More_gold^/i^RaidBoss_More_gold^/
+  ^Raid_Boss_Difficulty^/?i^Raid_Boss_Difficulty^/i^Raid_Boss_Difficulty^;
+
+!!VRi^Raid_Boss_Monster_Alive_Time^:F0/100;
+!!VRi^Raid_Boss_Spawn_Chance^:F0/100;
+!!VRi^Raid_Boss_Spawn_Radius^:F0/100;
+!!VRi^Raid_Boss_Spawn_Cooldown^:F0/100;
+!!VRi^Raid_Boss_special_chance_base^:F0/100;
+!!VRi^Raid_Boss_start_delay^:F0/100;
+!!VRi^Raid_Boss_Difficulty^:F1/5;
+!!VRi^RaidBoss_ACM_rewards^:F(FALSE)/(TRUE);
+!!VRi^RaidBoss_No_steal^:F(FALSE)/(TRUE);
+!!VRi^RaidBoss_More_gold^:F(FALSE)/(TRUE);
+
+
+!?FU(RaidBoss_SaveOptionsToIni);
+!!VR(filePath:z):S^Runtime/raid boss.ini^;
+
+!!FU(WriteIniInts):P(filePath)/^RaidBoss^/
+  ^Raid_Boss_Monster_Alive_Time^/i^Raid_Boss_Monster_Alive_Time^/
+  ^Raid_Boss_Spawn_Chance^/i^Raid_Boss_Spawn_Chance^/
+  ^Raid_Boss_Spawn_Radius^/i^Raid_Boss_Spawn_Radius^/
+  ^Raid_Boss_Spawn_Cooldown^/i^Raid_Boss_Spawn_Cooldown^/;
+
+!!FU(WriteIniInts):P(filePath)/^RaidBoss^/ 
+  ^Raid_Boss_special_chance_base^/i^Raid_Boss_special_chance_base^/
+  ^Raid_Boss_start_delay^/i^Raid_Boss_start_delay^/
+  ^RaidBoss_ACM_rewards^/i^RaidBoss_ACM_rewards^/
+  ^RaidBoss_No_steal^/i^RaidBoss_No_steal^/;
+
+!!FU(WriteIniInts):P(filePath)/^RaidBoss^/      
+  ^RaidBoss_More_gold^/i^RaidBoss_More_gold^/
+  ^Raid_Boss_Difficulty^/i^Raid_Boss_Difficulty^/;
+
+!!FU(SaveIni):P(filePath);
+
+!?PI;
+!!FU(RaidBoss_LoadOptionsFromIni):P;    [Try to load options from ini]
+
+
+// Cosmetics
+!?FU(RaidBoss_SetUpConfigMons);
+
+!!VR(impCadre:y):S(MON_IMP) +2;
+!!VR(hellhoundCadre:y):S(MON_HELL_HOUND) +2;
+!!VR(demonCadre:y):S(MON_HORNED_DEMON) +2;
+!!VR(efreetiCadre:y):S(MON_EFREETI) +2;
+!!VR(hellCadre:y):S(MON_HELL_BARON) +2;
+
+; Set up Perry, Archer and Daemon
+!!DL170:A81/(DLG_CMD_SET_DEF_FRAME)/(impCadre);
+!!DL170:A82/(DLG_CMD_SET_DEF_FRAME)/(hellhoundCadre);
+!!DL170:A83/(DLG_CMD_SET_DEF_FRAME)/(demonCadre);
+!!DL170:A84/(DLG_CMD_SET_DEF_FRAME)/(efreetiCadre);
+!!DL170:A85/(DLG_CMD_SET_DEF_FRAME)/(hellCadre);
+
+; Right-clicking event
+*?FU(OnCustomDialogEvent)&i^dlg_id^=170/i^mouse_item^>=80/i^mouse_item^<=86/i^mouse_action^=(MOUSE_RMB_PRESSED);
+*!if&i^mouse_item^=82;
+  *!VR(mon:y):S(MON_PHOENIX);
+*!el&i^mouse_item^=83;
+  *!VR(mon):S(MON_ARCTIC_SHARPSHOOTER);
+*!el&i^mouse_item^=84;
+  *!VR(mon):S(MON_HELL_BARON);
+*!el;
+  *!VR(mon):Si^diff_henchDlg_mon_%i(mouse_item)^;
+*!en;
+
+*!FU(diff_ShowMonDlgRecruiting)&(mon):P(mon)/(TRUE);
+

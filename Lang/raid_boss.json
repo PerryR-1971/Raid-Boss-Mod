@@ -13,18 +13,27 @@
 
 		"dialogue_hint": 					"Days alive: {~gold}@gold@{~}        Rewards: {~gold}@reward@{~}",		
 		
-		"town_siege": 						"{~red}%Z5 players town was under Siege!{~}\n\nThe raiding monster stole some of your resources.\n\n  %Y40 {~>SMALRES.def:0}\n  %Y41 {~>SMALRES.def:1}\n  %Y42 {~>SMALRES.def:2}\n  %Y43 {~>SMALRES.def:3}\n  %Y44 {~>SMALRES.def:4}\n  %Y45 {~>SMALRES.def:5}\n  %Y46 {~>SMALRES.def:6}",
+		"town_siege": 						"{~red}%Z5's town was under siege!{~}\n\nThe raiding monster stole some of your resources.\n\n  %Y40 {~>SMALRES.def:0}\n  %Y41 {~>SMALRES.def:1}\n  %Y42 {~>SMALRES.def:2}\n  %Y43 {~>SMALRES.def:3}\n  %Y44 {~>SMALRES.def:4}\n  %Y45 {~>SMALRES.def:5}\n  %Y46 {~>SMALRES.def:6}",
 			
 		"mon_appears": 						"{~red}Attention{~}\n\n{~Yellow}A strong raiding monster appeared near the @color@ player's town!{~}",
 		
 		"battle_text": 						"{~red}Raid Boss lvl: @level@{~}\n\n@ench1@\n@ench2@\n@ench3@\n@ench4@\n@ench5@\n\nMagic Resistance: 25%     Vulnerability: @vuln@",
 		
-		"reward_message1": 					"{~r}A glorius victory{~}\n\nDefeating the Raid Boss %Z-10 is rewared with some resources:",
-		"reward_message2": 					"{~r}A glorius victory{~}\n\nDefeating the Raid Boss %Z-10 is rewared with a primary skill point:",
-		"reward_message3": 					"{~r}A glorius victory{~}\n\nDefeating the Raid Boss %Z-10 gains some of the experience points required for the next level:",	
-		"reward_message4": 					"{~r}A glorius victory{~}\n\nDefeating the Raid Boss %Z-10 gets an artifact:",		
-		"reward_message5": 					"{~r}A glorius victory{~}\n\nDefeating the Raid Boss %Z-10 learns a new spell:",
-		"reward_message6": 					"{~r}A glorius victory{~}\n\nDefeating the Raid Boss %Z-10 is rewared with:\n\n+{~orange}%Z5{~}",
+		"reward_message1": 					"{~r}A glorious victory{~}\n\nDefeating the Raid Boss %Z-10 rewards you with some resources:",
+		"reward_message2": 					"{~r}A glorious victory{~}\n\nDefeating the Raid Boss %Z-10 rewards you with a primary skill point:",
+		"reward_message3": 					"{~r}A glorious victory{~}\n\nDefeating the Raid Boss %Z-10 rewards you with experience toward your next level:",	
+		"reward_message4": 					"{~r}A glorious victory{~}\n\nDefeating the Raid Boss %Z-10 rewards you with an artifact:",		
+		"reward_message5": 					"{~r}A glorious victory{~}\n\nDefeating the Raid Boss %Z-10 lets you learn a new spell:",
+		"reward_message6": 					"{~r}A glorious victory{~}\n\nDefeating the Raid Boss %Z-10 rewards you with:\n\n+{~orange}%Z5{~}",
+		"reward_message7": 					"{~r}A glorious victory{~}\n\nDefeating the Raid Boss %Z-10 rewards you with:\n\n+{~r}3%{~} to all Commander stats",
+		"reward_message8": 					"{~r}A glorious victory{~}\n\nDefeating the Raid Boss %Z-10 rewards you with:\n\n+{~r}3%{~} Luck strike damage",
+        "acts_again":                       "{~r}Raid Boss acts again{~}",
+        "acm_reward_magic_strength":        "2 Magic Strength",
+        "acm_reward_spell_damage":          "2% Spell Damage",
+        "acm_reward_spell_crit_chance":     "1% Spell Crit Chance",
+        "acm_reward_spell_crit_damage":     "2% Spell Crit Damage",
+        "acm_reward_physical_crit_chance":  "1% Physical Crit Chance",
+        "acm_reward_physical_crit_damage":  "2% Physical Crit Damage",
 		
 		"diff_header": 						"Select Raid Boss Difficulty\nRight-click system options to call settings again",
 		"diff_level1": 						"Easy - 75% stats scaling. Low reward chance.",
@@ -55,7 +64,7 @@
 		"Enchantment_21":					"Regeneration",
 		"Enchantment_22":					"Summoner",
 		"Enchantment_23":					"Positive Spirit",
-		"Enchantment_24":					"Area Attack"		
+		"Enchantment_24":					"Area Attack",		
 		
 		"red":								"red",
 		"blue":								"blue",
@@ -75,5 +84,44 @@
 		
 		
 	},
-
+	"Raid_Config": {
+    "confirm_button_hint_0":  "Save and Confirm",
+    "cancel_button_hint":  "Reset and Exit",
+    "RaidBoss_Dlg_Title":  "Raid Boss Configuration",
+    "RaidBoss_Option_0":  "Alive Time",
+    "RaidBoss_Option_0_Info":  "{Alive Time}\n\nThis value shows how long Raid Bosses roam on the adventure map. Ideally, this value should be connected to the map layout and spawn radius.\nRecommended: 10 days.",
+    "RaidBoss_Option_0_Title":  "Alive Time  Currently: @exp@ days",
+    "RaidBoss_Option_0_Legend":  "Alive Time = The time before the Raid Boss disappears from the map.",
+    "RaidBoss_Option_1":  "Spawn Chance",
+    "RaidBoss_Option_1_Info":  "{Spawn Chance}\n\nThis is the base chance of Raid Bosses spawning on the map. It increases by 1% per day until a Raid Boss appears. This means that even if you set the chance to zero, a Raid Boss will eventually appear.\nRecommended: 10%.",
+    "RaidBoss_Option_1_Title":  "Spawn Chance  Currently: @exp@%",
+    "RaidBoss_Option_1_Legend":  "Spawn Chance = Base value as a percentage + daily increase by which the Raid Boss appears on the adventure map.",
+    "RaidBoss_Option_2":  "Spawn Radius",
+    "RaidBoss_Option_2_Info":  "{Spawn Radius}\n\nThis is the radius around the town in which the Raid Boss can spawn. Adjusting this value for certain maps can prevent the Boss from spawning too far away.\nThe recommended radius is 20 tiles on the X and Y axes, depending on the map.",
+    "RaidBoss_Option_2_Title":  "Spawn Radius  Currently: @exp@ tiles",
+    "RaidBoss_Option_2_Legend":  "The tiles in X and Y coordinates around a town.",
+    "RaidBoss_Option_3":  "Spawn Cooldown",
+    "RaidBoss_Option_3_Info":  "{Spawn Cooldown}\n\nThe time before a new Raid Boss can spawn again for a player.\nRecommended: 7 days.",
+    "RaidBoss_Option_3_Title":  "Spawn Cooldown  Currently: @exp@ days",
+    "RaidBoss_Option_3_Legend":  "The number in days before a new Raid Boss can appear on the adventure map.",
+    "RaidBoss_Option_4":  "Start Delay",
+    "RaidBoss_Option_4_Info":  "{Start Delay}\n\nSet the number of days for which the monster will not spawn from the start of the game.\nThe recommended number of days is 28.",
+    "RaidBoss_Option_4_Title":  "Start Delay  Currently: @exp@ days",
+    "RaidBoss_Option_4_Legend":  "Start Delay in days counting from day 1.",
+    "RaidBoss_Option_5":  "Special Chance",
+    "RaidBoss_Option_5_Info":  "{Special Chance}\n\nThe likelihood of a random ability event occurring during a raid boss encounter is expressed as a percentage. It is recommended to set this to 1%, or to 0% if you want to make fights more difficult and unpredictable by removing any randomness.",
+    "RaidBoss_Option_5_Title":  "Special Chance  Currently: @exp@%",
+    "RaidBoss_Option_5_Legend":  "Chance for special events.",
+    "RaidBoss_Option_6":  "ACM Rewards",
+    "RaidBoss_Option_6_Info":  "{ACM Rewards}\n\nAdds special rewards to the pool, that can only be used when combined with the Advanced Classes mod.",
+    "RaidBoss_Option_7":  "No town plunder",
+    "RaidBoss_Option_7_Info":  "{No Town Plunder}\n\nWhen this option is enabled, a Raid Boss that reaches your town will not steal gold or resources.",
+    "RaidBoss_Option_8":  "More rewards",
+    "RaidBoss_Option_8_Info":  "{More Rewards}\n\nWhen this option is enabled, defeating a Raid Boss grants an additional gold reward.",
+    "RaidBoss_Dlg_Hint1":  "Very easy",
+    "RaidBoss_Dlg_Hint2":  "Easy",
+    "RaidBoss_Dlg_Hint3":  "Normal",
+    "RaidBoss_Dlg_Hint4":  "Hard",
+    "RaidBoss_Dlg_Hint5":  "Extreme"
+}
 }

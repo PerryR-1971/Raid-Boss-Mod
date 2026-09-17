@@ -1,0 +1,25 @@
+{
+  "raid_boss": {
+    "_notes": {
+      "priority": "Saved dialogue values in Runtime/raid boss.ini override these defaults.",
+      "reset": "Delete Runtime/raid boss.ini to use changed JSON defaults again.",
+      "difficulty": "1 = Very Easy, 2 = Easy, 3 = Normal, 4 = Hard, 5 = Extreme.",
+      "switches": "Use TRUE or FALSE for ACM_rewards, No_steal and More_gold.",
+      "weights": "Spawn_Chance and special_chance_base are percentages. Times are measured in days."
+    },
+    "settings": {
+      "Config_Loaded": "TRUE",
+      "Monster_Alive_Time": "12",
+      "Spawn_Chance": "12",
+      "Spawn_Radius": "20",
+      "Max_Monsters": "10",
+      "Spawn_Cooldown": "5",
+      "special_chance_base": "1",
+      "start_delay": "22",
+      "Difficulty": "3",
+      "ACM_rewards": "FALSE",
+      "No_steal": "FALSE",
+      "More_gold": "FALSE"
+    }
+  }
+}
