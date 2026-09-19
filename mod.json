@@ -1,14 +1,23 @@
 {
+  "caption": {
+    "en_US": "Raid Boss"
+  },
   "name": {
     "en": "Raid Boss"
   },
   "description": {
+    "full": {
+      "en_US": "readme.txt"
+    },
     "en": "readme.txt"
   },
   "author": "PerryR",
   "homepage": "https://github.com/PerryR-1971/Raid-Boss-Mod",
   "support": "https://discord.gg/hCTMfVq6w5",
-  "icon": "05.ico",
+  "icon": {
+    "file": "05.ico"
+  },
+  "mod_version": "1.4",
   "version": "1.4",
   "category": "gameplay",
   "compatibility": {
